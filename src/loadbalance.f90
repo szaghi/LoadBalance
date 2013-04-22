@@ -105,35 +105,36 @@ contains
   integer(I8P), optional, intent(IN)::    Wi             !< Ideal work load per processor.
   integer(I4P),           intent(IN)::    mgl            !< Number of levels of multi-grid to be preserved.
   integer(I4P),           intent(IN)::    pf(1:)         !< Prime factors for block splitting.
-  integer(I4P)::                          dir(1:3)       !< Direction selection variable.
+  !integer(I4P)::                          dir(1:3)       !< Direction selection variable.
+  !integer(I4P)::                          d              !< Counters.
   integer(I4P)::                          Nijk(1:3)      !< Direction selection variable.
   integer(I4P)::                          b(1:block%l+1) !< Blocks map, history of splitting.
   integer(I4P), allocatable::             pfd(:)         !< Dummy prime factors list for testing multi-grid levels.
-  integer(I4P)::                          s,d,f          !< Counters.
+  integer(I4P)::                          s,f            !< Counters.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   b(1:block%l) = block%b
   Nijk(1) = block%Ni ; Nijk(2) = block%Nj ; Nijk(3) = block%Nk
-  if     ((block%Ni>=block%Nj).AND.(block%Ni>=block%Nk)) then
-    if   ((block%Nj>=block%Nk)) then  !i>j>k
-      dir=[1,2,3]
-    else                              !i>k>j
-      dir=[1,3,2]
-    endif
-  elseif ((block%Nj>=block%Ni).AND.(block%Nj>=block%Nk)) then
-    if   ((block%Ni>=block%Nk)) then  !j>i>k
-      dir=[2,1,3]
-    else                              !j>k>i
-      dir=[2,3,1]
-    endif
-  elseif ((block%Nk>=block%Ni).AND.(block%Nk>=block%Nj)) then
-    if   ((block%Ni>=block%Nj)) then  !k>i>j
-      dir=[3,1,2]
-    else                              !k>j>i
-      dir=[3,2,1]
-    endif
-  endif
+  !if     ((block%Ni>=block%Nj).AND.(block%Ni>=block%Nk)) then
+  !  if   ((block%Nj>=block%Nk)) then  !i>j>k
+  !    dir=[1,2,3]
+  !  else                              !i>k>j
+  !    dir=[1,3,2]
+  !  endif
+  !elseif ((block%Nj>=block%Ni).AND.(block%Nj>=block%Nk)) then
+  !  if   ((block%Ni>=block%Nk)) then  !j>i>k
+  !    dir=[2,1,3]
+  !  else                              !j>k>i
+  !    dir=[2,3,1]
+  !  endif
+  !elseif ((block%Nk>=block%Ni).AND.(block%Nk>=block%Nj)) then
+  !  if   ((block%Ni>=block%Nj)) then  !k>i>j
+  !    dir=[3,1,2]
+  !  else                              !k>j>i
+  !    dir=[3,2,1]
+  !  endif
+  !endif
   splitting: do f=1,size(pf,dim=1)
     !direction: do d=1,3
       !select case(dir(d))
@@ -709,7 +710,7 @@ integer(I8P)::                  Wmax=0                    !< Maximum work load o
 integer(I4P)::                  bmax=0                    !< Index of heaviest block.
 integer(I4P),   allocatable::   pf(:)                     !< Prime factors for block splitting [...,9,7,5,3,2].
 character(100), allocatable::   pfc(:)                    !< Dummy strings for prime factors parsing.
-integer(I4P)::                  mgl=4                     !< Number of levels of multi-grid.
+integer(I4P)::                  mgl=3                     !< Number of levels of multi-grid (must be increased of 1).
 integer(I4P)::                  imax=1000                 !< Maximum number of balancing iterations.
 logical::                       save_blk_his=.false.      !< Flag for saving the splitting history of each original block.
 logical::                       save_lvl_lis=.false.      !< Flag for saving levele list.
@@ -732,7 +733,7 @@ do while (c<Nca)
   select case(trim(switch))
   case('-i')
     call get_command_argument(c+1,fnamein) ; c = c + 1
-    froot = basename(trim(fnamein)) ; froot = trim(froot(1:index(froot,'.grd')-1))
+    froot = basename(trim(fnamein)) ; if (index(froot,'.grd')>0) froot = trim(froot(1:index(froot,'.grd')-1))
   case('-np')
     call get_command_argument(c+1,dum) ; c = c + 1
     Np = cton(dum,I4P)
@@ -756,7 +757,7 @@ do while (c<Nca)
     imax = cton(dum,I4P)
   case('-mgl')
     call get_command_argument(c+1,dum) ; c = c + 1
-    mgl = cton(dum,I4P)
+    mgl = cton(dum,I4P) ; mgl = mgl - 1
   case('-save_blk_his')
     save_blk_his = .true.
   case('-save_lvl_lis')
@@ -770,6 +771,7 @@ enddo
 if (.not.allocated(pf)) then
   allocate(pf(1:2)) ; pf = [3,2]
 endif
+call print_defaults
 allocate(proc(1:Np))
 ! loading input data
 open(unit = Get_Unit(uin), file = trim(fnamein), form = 'UNFORMATTED', convert = trim(endianism))
@@ -820,6 +822,28 @@ call save_output(block=block,froot=basename(trim(froot)),mgl=mgl,save_lvl_lis=sa
 stop
 !-----------------------------------------------------------------------------------------------------------------------------------
 contains
+  !> @brief Subroutine for printing values of defaults.
+  subroutine print_defaults()
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  integer(I4P):: f !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  write(stdout,'(A)')' Input file :'//trim(fnamein)
+  write(stdout,'(A)')' Number of processors :'//trim(str(.true.,Np))
+  write(stdout,'(A)')' Bit ordering :'//trim(endianism)
+  write(stdout,'(A)')' Prime factors :'
+  do f=1,size(pf,dim=1)
+    write(stdout,'(A)')'   '//trim(str(.true.,pf(f)))
+  enddo
+  write(stdout,'(A)')' Balancing tolerance :'//trim(str(.true.,bal))//'%'
+  write(stdout,'(A)')' Maximum number of iterations :'//trim(str(.true.,imax))
+  write(stdout,'(A)')' Number of multigrid levels :'//trim(str(.true.,mgl+1))
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endsubroutine print_defaults
+
   !> @brief Subroutine for printing usage help message.
   subroutine print_usage()
   !---------------------------------------------------------------------------------------------------------------------------------
