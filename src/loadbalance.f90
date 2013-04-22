@@ -109,7 +109,7 @@ contains
   !integer(I4P)::                          d              !< Counters.
   integer(I4P)::                          Nijk(1:3)      !< Direction selection variable.
   integer(I4P)::                          b(1:block%l+1) !< Blocks map, history of splitting.
-  integer(I4P), allocatable::             pfd(:)         !< Dummy prime factors list for testing multi-grid levels.
+  !integer(I4P), allocatable::             pfd(:)         !< Dummy prime factors list for testing multi-grid levels.
   integer(I4P)::                          s,f            !< Counters.
   !---------------------------------------------------------------------------------------------------------------------------------
 
@@ -141,7 +141,8 @@ contains
       select case(maxloc(Nijk,dim=1))
       case(1)
         if (any(block%pfi==pf(f))) then
-          call prime(n=block%Ni/pf(f),p=pfd) ; if (size(pfd,dim=1)<mgl) cycle splitting
+          !call prime(n=block%Ni/pf(f),p=pfd) ; if (size(pfd,dim=1)<mgl) cycle splitting
+          if (div2(block%Ni/pf(f))<mgl) cycle splitting
           block%split = .true.
           block%dir = 1
           block%Ns = pf(f)
@@ -159,7 +160,8 @@ contains
         endif
       case(2)
         if (any(block%pfj==pf(f))) then
-          call prime(n=block%Nj/pf(f),p=pfd) ; if (size(pfd,dim=1)<mgl) cycle splitting
+          !call prime(n=block%Nj/pf(f),p=pfd) ; if (size(pfd,dim=1)<mgl) cycle splitting
+          if (div2(block%Nj/pf(f))<mgl) cycle splitting
           block%split = .true.
           block%dir = 2
           block%Ns = pf(f)
@@ -177,7 +179,8 @@ contains
         endif
       case(3)
         if (any(block%pfk==pf(f))) then
-          call prime(n=block%Nk/pf(f),p=pfd) ; if (size(pfd,dim=1)<mgl) cycle splitting
+          !call prime(n=block%Nk/pf(f),p=pfd) ; if (size(pfd,dim=1)<mgl) cycle splitting
+          if (div2(block%Nk/pf(f))<mgl) cycle splitting
           block%split = .true.
           block%dir = 3
           block%Ns = pf(f)
@@ -525,6 +528,7 @@ contains
     call proc(l)%blist%putt(d=sbuffer)
     proc(l)%Wp = proc(l)%Wp + block%Wb
     proc(l)%Wpr = proc(l)%Wp*100._R8P/Wi
+    proc(l)%balanced=.false.
     if ((proc(l)%Wpr>(100._R8P-bal)).AND.(proc(l)%Wpr<(100._R8P+bal))) proc(l)%balanced=.true.
   endif
   return
@@ -710,7 +714,7 @@ integer(I8P)::                  Wmax=0                    !< Maximum work load o
 integer(I4P)::                  bmax=0                    !< Index of heaviest block.
 integer(I4P),   allocatable::   pf(:)                     !< Prime factors for block splitting [...,9,7,5,3,2].
 character(100), allocatable::   pfc(:)                    !< Dummy strings for prime factors parsing.
-integer(I4P)::                  mgl=3                     !< Number of levels of multi-grid (must be increased of 1).
+integer(I4P)::                  mgl=4                     !< Number of levels of multi-grid.
 integer(I4P)::                  imax=1000                 !< Maximum number of balancing iterations.
 logical::                       save_blk_his=.false.      !< Flag for saving the splitting history of each original block.
 logical::                       save_lvl_lis=.false.      !< Flag for saving levele list.
@@ -757,7 +761,7 @@ do while (c<Nca)
     imax = cton(dum,I4P)
   case('-mgl')
     call get_command_argument(c+1,dum) ; c = c + 1
-    mgl = cton(dum,I4P) ; mgl = mgl - 1
+    mgl = cton(dum,I4P) ! mgl = mgl - 1
   case('-save_blk_his')
     save_blk_his = .true.
   case('-save_lvl_lis')
@@ -804,7 +808,7 @@ balance: do
     call assign_block(block=block(b),Wi=Wi,bal=bal,proc=proc)
   enddo
   ! checking balancing
-  if (all(proc(:)%balanced).OR.(i>=imax)) exit balance
+  if (all(proc(:)%balanced,dim=1).OR.(i>=imax)) exit balance
   ! some processors are not balanced their blocks (some of) must be splitted
   do p=1,Np
     if (.not.proc(p)%balanced) call proc(p)%split_block(block=block,mgl=mgl,pf=pf)
@@ -837,9 +841,9 @@ contains
   do f=1,size(pf,dim=1)
     write(stdout,'(A)')'   '//trim(str(.true.,pf(f)))
   enddo
-  write(stdout,'(A)')' Balancing tolerance :'//trim(str(.true.,bal))//'%'
+  write(stdout,'(A)')' Balancing tolerance :'//trim(str('(F10.3)',bal))//'%'
   write(stdout,'(A)')' Maximum number of iterations :'//trim(str(.true.,imax))
-  write(stdout,'(A)')' Number of multigrid levels :'//trim(str(.true.,mgl+1))
+  write(stdout,'(A)')' Number of multigrid levels :'//trim(str(.true.,mgl))
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endsubroutine print_defaults
@@ -896,7 +900,7 @@ contains
   write(stdout,'(A)')' Number of processors '//trim(str(.true.,Np))
   do p=1,Np
     sbuffer='   Processor:'//trim(str('(I7)',p))//', Work Load:'//trim(str('(I8)',proc(p)%Wp))//&
-            ', Balance:'//trim(str('(F8.2)',proc(p)%Wpr-100))//'%'
+            ', Balance:'//trim(str('(F8.2)',proc(p)%Wpr-100._R8P))//'%'
     write(stdout,'(A)')trim(sbuffer)
   enddo
   return
