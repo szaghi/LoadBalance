@@ -19,6 +19,32 @@ OPENMP    = no
 
 .PHONY : DEFAULTRULE
 DEFAULTRULE: $(DEXE)loadbalance
+
+.PHONY : help
+help:
+	@echo
+	@echo -e '\033[1;31m Make options of Load Balance code\033[0m'
+	@echo
+	@echo -e '\033[1;31m Compiler choice: COMPILER=$(COMPILER)\033[0m\033[1m => default\033[0m'
+	@echo -e '\033[1;31m  COMPILER=gnu  \033[0m\033[1m => GNU gfortran          \033[0m'
+	@echo -e '\033[1;31m  COMPILER=intel\033[0m\033[1m => Intel Fortran         \033[0m'
+	@echo
+	@echo -e '\033[1;31m Compiling options\033[0m'
+	@echo -e '\033[1;31m  DEBUG=yes(no)   \033[0m\033[1m => on(off) debug                  (default $(DEBUG))\033[0m'
+	@echo -e '\033[1;31m  F03STD=yes(no)  \033[0m\033[1m => on(off) check standard fortran (default $(F03STD))\033[0m'
+	@echo -e '\033[1;31m  OPTIMIZE=yes(no)\033[0m\033[1m => on(off) optimization           (default $(OPTIMIZE))\033[0m'
+	@echo -e '\033[1;31m  OPENMP=yes(no)  \033[0m\033[1m => on(off) OpenMP directives      (default $(OPENMP))\033[0m'
+	@echo
+	@echo -e '\033[1;31m Provided Rules: default=loadbalance\033[0m\033[1m => compile the code\033[0m'
+	@echo -e '\033[1;31m  help         =>\033[0m\033[1m printing this help message\033[0m'
+	@echo -e '\033[1;31m  loadbalance  =>\033[0m\033[1m compile the library\033[0m'
+	@echo -e '\033[1;31m  cleanobj     =>\033[0m\033[1m cleaning compiled object\033[0m'
+	@echo -e '\033[1;31m  cleanmod     =>\033[0m\033[1m cleaning .mod files\033[0m'
+	@echo -e '\033[1;31m  cleanmsg     =>\033[0m\033[1m cleaning make-log massage files\033[0m'
+	@echo -e '\033[1;31m  clean        =>\033[0m\033[1m running cleanobj, cleanmod and cleanmsg\033[0m'
+	@echo -e '\033[1;31m  cleanall     =>\033[0m\033[1m running clean and cleanexe\033[0m'
+	@echo -e '\033[1;31m  tar          =>\033[0m\033[1m creating a tar archive of the project\033[0m'
+	@echo -e '\033[1;31m  doc          =>\033[0m\033[1m building the documentation\033[0m'
 #----------------------------------------------------------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------------------------------------------------------

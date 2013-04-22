@@ -716,55 +716,9 @@ logical::                       save_lvl_lis=.false.      !< Flag for saving lev
 integer(I4P)::                  Nca=0                     !< Command line argument number.
 character(100)::                switch,dum                !< Command line argument switches.
 integer(I4P)::                  b,c,p,i                   !< Counters.
-!cazzo
-type(Type_SL_List):: cazzo
-real(R8P):: cazzoR8
-character(100):: cazzoch
-logical:: cazzoH
-!cazzo
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------------------------------------------------
-!cazzo
-call cazzo%putt(d=1._R8P)
-call cazzo%putt(d=2._R8P)
-call cazzo%putt(d=3._R8P)
-call cazzo%putt(d=4._R8P)
-call cazzo%putt(d=5._R8P)
-call cazzo%putt(d=6._R8P)
-call cazzo%putt(d='cazzo')
-call cazzo%putt(d=7._R8P)
-call cazzo%putt(d=8._R8P)
-call cazzo%get(n=5,d=cazzoR8)
-print*, 5,cazzoR8
-call cazzo%get(n=2,d=cazzoR8)
-print*, 2,cazzoR8
-call cazzo%get(n=1,d=cazzoR8)
-print*, 1,cazzoR8
-call cazzo%get(n=8,d=cazzoR8)
-print*, 8,cazzoR8
-call cazzo%get(n=9,d=cazzoR8)
-print*, 9,cazzoR8
-call cazzo%get(n=0,d=cazzoR8)
-print*, 0,cazzoR8
-call cazzo%del(n=6)
-call cazzo%get(n=6,d=cazzoch)
-print*, 6,trim(cazzoch)
-call cazzo%put(n=4,d=-26._R8P)
-call cazzo%get(n=4,d=cazzoR8)
-print*, 4,cazzoR8
-call cazzo%put(n=9,d=-126._R8P)
-call cazzo%get(n=9,d=cazzoR8)
-print*, 9,cazzoR8
-call cazzo%put(n=19,d=-1026._R8P)
-call cazzo%get(n=11,d=cazzoR8)
-print*, 9,cazzoR8
-call cazzo%putt(d=1_I8P)
-call cazzo%puth(d=-1_I8P)
-cazzoH=cazzo%homogeneous()
-print*, cazzo%l,cazzoH
-stop
-!cazzo
 ! parsing command line arguments
 Nca = command_argument_count()
 if (Nca==0) then
