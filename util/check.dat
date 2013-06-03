@@ -1,0 +1,5 @@
+check.grd                  ! output file name
+3                          ! number of block
+6 1 1                      ! Ni,Nj,Nk
+8 1 1                      ! Ni,Nj,Nk
+9 1 1                      ! Ni,Nj,Nk

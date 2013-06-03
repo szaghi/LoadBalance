@@ -12,7 +12,7 @@ $(VERBOSE).SILENT:
 # options
 COMPILER  = intel
 DEBUG     = yes
-F03STD    = yes
+F08STD    = yes
 PROFILING = no
 OPTIMIZE  = no
 OPENMP    = no
@@ -26,12 +26,13 @@ help:
 	@echo -e '\033[1;31m Make options of Load Balance code\033[0m'
 	@echo
 	@echo -e '\033[1;31m Compiler choice: COMPILER=$(COMPILER)\033[0m\033[1m => default\033[0m'
-	@echo -e '\033[1;31m  COMPILER=gnu  \033[0m\033[1m => GNU gfortran          \033[0m'
-	@echo -e '\033[1;31m  COMPILER=intel\033[0m\033[1m => Intel Fortran         \033[0m'
+	@echo -e '\033[1;31m  COMPILER=gnu  \033[0m\033[1m => GNU gfortran   \033[0m'
+	@echo -e '\033[1;31m  COMPILER=intel\033[0m\033[1m => Intel Fortran  \033[0m'
+	@echo -e '\033[1;31m  COMPILER=xlf  \033[0m\033[1m => IBM xlf Fortran\033[0m'
 	@echo
 	@echo -e '\033[1;31m Compiling options\033[0m'
 	@echo -e '\033[1;31m  DEBUG=yes(no)   \033[0m\033[1m => on(off) debug                  (default $(DEBUG))\033[0m'
-	@echo -e '\033[1;31m  F03STD=yes(no)  \033[0m\033[1m => on(off) check standard fortran (default $(F03STD))\033[0m'
+	@echo -e '\033[1;31m  F08STD=yes(no)  \033[0m\033[1m => on(off) check standard fortran (default $(F08STD))\033[0m'
 	@echo -e '\033[1;31m  OPTIMIZE=yes(no)\033[0m\033[1m => on(off) optimization           (default $(OPTIMIZE))\033[0m'
 	@echo -e '\033[1;31m  OPENMP=yes(no)  \033[0m\033[1m => on(off) OpenMP directives      (default $(OPENMP))\033[0m'
 	@echo
@@ -67,16 +68,16 @@ PRINTCHK = "\\033[1;31m Compiler used   \\033[0m\\033[1m $(FC) => $(WHICHFC)\\03
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 ifeq "$(COMPILER)" "gnu"
-  FC = gfortran-4.7
-  OPTSC   = -cpp -c -J$(DMOD)
-  OPTSL   =
+  FC = gfortran
+  OPTSC = -cpp -c -J$(DMOD)
+  OPTSL =
   # debug
   ifeq "$(DEBUG)" "yes"
     OPTSC := $(OPTSC) -O0 -Wall -Wno-array-temporaries -Warray-bounds -fcheck=all -fbacktrace -ffpe-trap=invalid,overflow,underflow
     OPTSL := $(OPTSL) -O0 -Wall -Wno-array-temporaries -Warray-bounds -fcheck=all -fbacktrace -ffpe-trap=invalid,overflow,underflow
   endif
   # standard
-  ifeq "$(F03STD)" "yes"
+  ifeq "$(F08STD)" "yes"
     OPTSC := $(OPTSC) -std=f2008 -fall-intrinsics
     OPTSL := $(OPTSL) -std=f2008 -fall-intrinsics
   endif
@@ -93,8 +94,8 @@ ifeq "$(COMPILER)" "gnu"
 endif
 ifeq "$(COMPILER)" "intel"
   FC = ifort
-  OPTSC   = -cpp -c -module $(DMOD)
-  OPTSL   =
+  OPTSC = -cpp -c -module $(DMOD)
+  OPTSL =
   # debug
   ifeq "$(DEBUG)" "yes"
     CHK = -check all
@@ -104,9 +105,9 @@ ifeq "$(COMPILER)" "intel"
     OPTSL := $(OPTSL) -O0 -fpe-all=0 -fp-stack-check -traceback $(WRN) $(CHK) $(DEB)
   endif
   # standard
-  ifeq "$(F03STD)" "yes"
-    OPTSC := $(OPTSC) -std03
-    OPTSL := $(OPTSL) -std03
+  ifeq "$(F08STD)" "yes"
+    OPTSC := $(OPTSC) -std08
+    OPTSL := $(OPTSL) -std08
   endif
   # optimization
   ifeq "$(OPTIMIZE)" "yes"
@@ -118,6 +119,22 @@ ifeq "$(COMPILER)" "intel"
     OPTSC := $(OPTSC) -openmp
     OPTSL := $(OPTSL) -openmp
     PREPROC := $(PREPROC) -DOPENMP
+  endif
+endif
+ifeq "$(COMPILER)" "xlf"
+	FC = xlf2003
+	OPTSC = -qstrict -cpp -c -qmoddir=$(DMOD) -I$(DMOD)
+	OPTSL =
+  PREPROC := $(PREPROC) -DcXLF
+  # debug
+  ifeq "$(DEBUG)" "yes"
+    OPTSC := $(OPTSC) -O0 -C -g
+    OPTSL := $(OPTSL) -O0 -C -g
+  endif
+  # optimization
+  ifeq "$(OPTIMIZE)" "yes"
+    OPTSC := $(OPTSC) -O3
+    OPTSL := $(OPTSL) -O3
   endif
 endif
 #-----------------------------------------------------------------------------------------------------------------------------------
@@ -192,44 +209,44 @@ $(DEXE)loadbalance : PRINTINFO $(MKDIRS) $(DOBJ)loadbalance.o
 	@$(FC) $(OPTSL) $(DOBJ)*.o $(LIBS) -o $@ 1>> diagnostic_messages 2>> error_messages
 EXES := $(EXES) loadbalance
 
-$(DOBJ)data_type_os.o : Data_Type_OS.f90 \
+$(DOBJ)data_type_os.o : Data_Type_OS.F90 \
 	$(DOBJ)ir_precision.o
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)data_type_sl_list.o : Data_Type_SL_List.f90 \
+$(DOBJ)data_type_sl_list.o : Data_Type_SL_List.F90 \
 	$(DOBJ)ir_precision.o
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)data_type_time.o : Data_Type_Time.f90 \
+$(DOBJ)data_type_time.o : Data_Type_Time.F90 \
 	$(DOBJ)ir_precision.o
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)data_type_vector.o : Data_Type_Vector.f90 \
+$(DOBJ)data_type_vector.o : Data_Type_Vector.F90 \
 	$(DOBJ)ir_precision.o
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)ir_precision.o : IR_Precision.f90
+$(DOBJ)ir_precision.o : IR_Precision.F90
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)lib_io_misc.o : Lib_IO_Misc.f90 \
+$(DOBJ)lib_io_misc.o : Lib_IO_Misc.F90 \
 	$(DOBJ)ir_precision.o \
 	$(DOBJ)data_type_os.o
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)lib_math.o : Lib_Math.f90 \
+$(DOBJ)lib_math.o : Lib_Math.F90 \
 	$(DOBJ)ir_precision.o \
 	$(DOBJ)data_type_sl_list.o \
 	$(DOBJ)data_type_vector.o
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)loadbalance.o : loadbalance.f90 \
+$(DOBJ)loadbalance.o : loadbalance.F90 \
 	$(DOBJ)ir_precision.o \
 	$(DOBJ)data_type_sl_list.o \
 	$(DOBJ)data_type_time.o \
@@ -241,7 +258,7 @@ $(DOBJ)loadbalance.o : loadbalance.f90 \
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)%.o : %.f90
+$(DOBJ)%.o : %.F90
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
