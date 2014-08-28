@@ -612,7 +612,7 @@ contains
   Wbsplit = nint(Wbmin + Thresh*(Wbmax-Wbmin),I8P)
   split_performed = .false.
   cur => leaf
-  do while(associated(cur))
+  do_bs: do while(associated(cur))
     if (cur%Wb<=Wbsplit) then
       bsplit => cur
       do while(associated(bsplit))
@@ -620,19 +620,19 @@ contains
         if (split_performed) return
         bsplit => bsplit%bpl
        enddo
-       return
+       exit do_bs !return
     else
       cur => cur%bnl
     endif
-  enddo
+  enddo do_bs
   if (.not.split_performed) then
     write(stderr,'(A)')' Error: split failed!'
-    write(stderr,'(A)')' Block is =>'// &
-                       ' Ancestor: '//trim(str(.true.,bsplit%a))//&
-                       ' Level: '//trim(str(.true.,bsplit%l))//&
-                       ' Sizes: Ni-'//trim(str(.true.,bsplit%Ni))//&
-                              ' Nj-'//trim(str(.true.,bsplit%Nj))//&
-                              ' Nk-'//trim(str(.true.,bsplit%Nk))
+!    write(stderr,'(A)')' Block is =>'// &
+!                       ' Ancestor: '//trim(str(.true.,bsplit%a))//&
+!                       ' Level: '//trim(str(.true.,bsplit%l))//&
+!                       ' Sizes: Ni-'//trim(str(.true.,bsplit%Ni))//&
+!                              ' Nj-'//trim(str(.true.,bsplit%Nj))//&
+!                              ' Nk-'//trim(str(.true.,bsplit%Nk))
     stop
   endif
   return
@@ -1060,6 +1060,7 @@ endmodule Lib_Balancing
 program loadbalance
 !-----------------------------------------------------------------------------------------------------------------------------------
 USE IR_Precision
+USE Data_Type_OS
 USE Data_Type_SL_List
 USE Lib_Balancing
 USE Lib_IO_Misc
@@ -1067,6 +1068,7 @@ USE Lib_IO_Misc
 
 !-----------------------------------------------------------------------------------------------------------------------------------
 implicit none
+type(Type_OS):: OS !< Running architecture.
 ! main data structures
 integer(I4P)::                  Nb=0     !< Number of blocks.
 type(Type_Block), pointer::     block(:) !< Blocks data [1:Nb].
@@ -1086,18 +1088,22 @@ integer(I4P)::                Nbs=0         !< Number of blocks after splitting.
 real(R8P)::                   bal=3._R8P    !< Tollerance of maximum balancing.
 integer(I8P)::                Wi=0          !< Ideal work load per processor.
 integer(I8P)::                Wmax=0        !< Maximum work load over blocks.
-integer(I4P)::                bmax=0        !< Index of heaviest block.
-integer(I4P),   allocatable:: pf(:)         !< Prime factors for block splitting [...,9,7,5,3,2].
-character(Nc), allocatable::  pfc(:)        !< Dummy strings for prime factors parsing.
-integer(I4P)::                mgl=4         !< Number of levels of multi-grid.
-integer(I4P)::                imax=1000     !< Maximum number of balancing iterations.
-real(R8P)::                   Wprmax=0._R8P !< Maximum Wpr.
-real(R8P)::                   Thresh=0._R8P !< Threshold of splitting.
+integer(I4P)::                bmax=0             !< Index of heaviest block.
+integer(I4P),   allocatable:: pf(:)              !< Prime factors for block splitting [...,9,7,5,3,2].
+character(Nc), allocatable::  pfc(:)             !< Dummy strings for prime factors parsing.
+integer(I4P)::                mgl=4              !< Number of levels of multi-grid.
+integer(I4P)::                imax=1000          !< Maximum number of balancing iterations.
+real(R8P)::                   Wprmax=0._R8P      !< Maximum Wpr.
+real(R8P)::                   thresh             !< Threshold of splitting.
+real(R8P)::                   threshMin=1._R8P   !< Minimum split threshold.
+real(R8P)::                   threshMax=1._R8P   !< Maximum split threshold.
+integer(I4P)::                threshNum=1_I4P    !< Number of split threshold.
+real(R8P)::                   threshDelta=0._R8P !< Delta split threshold.
 ! command line parsing variables
 integer(I4P)::   Nca=0      !< Command line argument number.
 character(100):: switch,dum !< Command line argument switches.
 ! auxiliary variables
-integer(I4P):: i,j,k,b,l,c,p,t,tmax !< Counters.
+integer(I4P):: i,j,k,b,l,c,p,t !< Counters.
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -1149,7 +1155,23 @@ do while (c<Nca)
     save_blk_growth = .true.
   case('-thresh')
     call get_command_argument(c+1,dum) ; c = c + 1
-    Thresh = cton(dum,R8P)
+    call tokenize(strin=dum,delimiter='-',toks=pfc)
+    if(size(pfc,dim=1) /= 3) then
+      write(stderr,'(A)')' -thresh requires 3 arguments, min/max fraction and number of thresholds, e.g. 0.2-0.8-5'
+      call print_usage
+      stop
+    endif
+    threshMin = cton(pfc(1),1._R8P)
+    threshMax = cton(pfc(2),1._R8P)
+    threshNum = cton(pfc(3),1_I4P)
+    if(threshNum>1) threshDelta = (threshMax-threshMin)/(threshNum-1)
+    if(threshMin < 0._R8P .or. threshMax > 1._R8P .or. threshMin > threshMax  &
+          .or. (abs(threshMax-(threshMin+(threshNum-1)*threshDelta)) > 0.00001_R8P)) then
+      write(stderr,'(A)')' -thresh requires 3 arguments, min/max fraction and number of thresholds, e.g. 0.2-0.8-5'
+      call print_usage
+      stop
+    endif
+    write(500,*)'DEBUG: Manual Threshold activated: ',threshMin,threshMax,threshNum,threshDelta
   case default
     write(stderr,'(A)')' Switch "'//trim(switch)//'" unknown!'
     call print_usage
@@ -1160,7 +1182,7 @@ if (trim(fnamein)=='') then
   write(stderr,'(A)')' Error: a valid file name for input file must be provided!'
   stop
 else
-  froot = basename(trim(fnamein))                                         ! basename of fnamein
+  froot = OS%basename(trim(fnamein))                                         ! basename of fnamein
   if (index(froot,'.grd')>0) froot = trim(froot(1:index(froot,'.grd')-1)) ! trimming .grd
   do l=1,99 ! loop over admissible levels
     if (index(froot,'.'//strz(2,l))>0) then
@@ -1243,9 +1265,10 @@ balance: do
   ! checking balancing
   if (all(proc(:)%balanced,dim=1).OR.(i>=imax)) exit balance
   ! some processors are not balanced their blocks (some of) must be split
-  tmax = 1
-  do t=0,tmax
-    call split_block_leaf(mgl=mgl,Wi=Wi,Thresh=real(t/(tmax*1._R8P),R8P),leaf=leaf)
+  do t=1,threshNum
+    thresh = threshMin + (t-1)*threshDelta
+    call split_block_leaf(mgl=mgl,Wi=Wi,Thresh=thresh,leaf=leaf)
+!    call split_block_leaf(mgl=mgl,Wi=Wi,Thresh=real(t/(tmax*1._R8P),R8P),leaf=leaf)
   enddo
   ! check if the procedure is converging
   call converging_check(block=block,leaf=leaf,save_blk_growth=save_blk_growth,Nbs=Nbs)
@@ -1281,16 +1304,19 @@ contains
   write(stdout,'(A)')'       -b balancing_tolerance (default 3.0%)'
   write(stdout,'(A)')'       -imax maximum_balancing_iteration (default 1000)'
   write(stdout,'(A)')'       -mgl number_of_multi-grid_levels (default 4)'
+  write(stdout,'(A)')'       -thresh => manual tuning of splitting, min/max/number (default 1.-1.-1)'
   write(stdout,'(A)')'       -save_blk_his => save splitting history of each original block (default no)'
   write(stdout,'(A)')'       -save_lvl_lis => save level block list for each level (default no)'
   write(stdout,'(A)')'       -save_blk_grw => save blocks growth history (default no)'
   write(stdout,'(A)')'   Examples:'
-  write(stdout,'(A)')'     loadbalance -check check.dat              ! checking the algoritm with simple block structure'
-  write(stdout,'(A)')'     loadbalance -i cc.01                      ! little endian input file and 8 procs'
-  write(stdout,'(A)')'     loadbalance -i cc.01 -np 16 -be           ! big endian input file and 16 procs'
-  write(stdout,'(A)')'     loadbalance -i cc.01 -np 32 -b 2.         ! maximum admissible unbalance factor of 2%'
-  write(stdout,'(A)')'     loadbalance -i cc.01 -np 16 -imax 100     ! maximum number of balancing iterations set to 100'
-  write(stdout,'(A)')'     loadbalance -i cc.01 -np 32 -save_blk_his ! save block splitting history for each original block'
+  write(stdout,'(A)')'     loadbalance -check check.dat                  ! checking the algoritm with simple block structure'
+  write(stdout,'(A)')'     loadbalance -i cc.01                          ! little endian input file and 8 procs'
+  write(stdout,'(A)')'     loadbalance -i cc.01 -np 16 -be               ! big endian input file and 16 procs'
+  write(stdout,'(A)')'     loadbalance -i cc.01 -np 32 -b 2.             ! maximum admissible unbalance factor of 2%'
+  write(stdout,'(A)')'     loadbalance -i cc.01 -np 16 -imax 100         ! maximum number of balancing iterations set to 100'
+  write(stdout,'(A)')'     loadbalance -i cc.01 -np 32 -save_blk_his     ! save block splitting history for each original block'
+  write(stdout,'(A)')'     loadbalance -i cc.01 -np 32 -thresh 0.2-0.8-3 ! each iteration three blocks are splitted:'//&
+                                                                        ' 20%, 40% and 60% normalized size '
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endsubroutine print_usage
@@ -1327,12 +1353,6 @@ contains
     call block(b)%print
     call block(b)%get_Nbs(Nbs=Nbs)
   enddo
-  write(stdout,'(A)')' Total Work Load '//trim(str(.true.,sum(block%Wb)))
-  write(stdout,'(A)')' Ideal Work Load per processor '//trim(str(.true.,Wi))
-  write(stdout,'(A)')' Maximum Work Load over blocks '//trim(str(.true.,Wmax))//' found in block '//trim(str(.true.,bmax))
-  write(stdout,'(A)')' Number of split blocks '//trim(str(.true.,Nbs))
-  write(stdout,'(A)')' Number of balancing iterations '//trim(str(.true.,i))
-  write(stdout,'(A)')' Number of processors '//trim(str(.true.,Np))
   Wprmax = MinR8P
   do p=1,Np
     sbuffer='   Processor:'//trim(str('(I7)',p))//', Work Load:'//trim(str('(I8)',proc(p)%Wp))//&
@@ -1340,6 +1360,12 @@ contains
     write(stdout,'(A)')trim(sbuffer)
     Wprmax = max(Wprmax,abs(proc(p)%Wpr-100._R8P))
   enddo
+  write(stdout,'(A)')' Total Work Load '//trim(str(.true.,sum(block%Wb)))
+  write(stdout,'(A)')' Ideal Work Load per processor '//trim(str(.true.,Wi))
+  write(stdout,'(A)')' Maximum Work Load over ancestor blocks '//trim(str(.true.,Wmax))//' found in block '//trim(str(.true.,bmax))
+  write(stdout,'(A)')' Number of split blocks '//trim(str(.true.,Nbs))
+  write(stdout,'(A)')' Number of balancing iterations '//trim(str(.true.,i))
+  write(stdout,'(A)')' Number of processors '//trim(str(.true.,Np))
   write(stdout,'(A)')' Maximum un-balance '//trim(str('(F8.2)',Wprmax))//'%'
   return
   !---------------------------------------------------------------------------------------------------------------------------------

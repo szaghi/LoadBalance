@@ -3,7 +3,7 @@
 command -v bsplit >/dev/null 2>&1 || { echo >&2 "I require bsplit but it's not installed. Aborting."; exit 1; }
 command -v cutter >/dev/null 2>&1 || { echo >&2 "I require cutter but it's not installed. Aborting."; exit 1; }
 function print_usage {
-  echo "Usage: `basename $0` -l #number_of_splits_levels [-bsplit] [-cutter [check_only]]"
+  echo "Usage: `basename $0` -l #number_of_splits_levels [-bsplit] [-cutter [do/check_only]] [-extract [link/copy/move]]"
 }
 if [ $# -eq 0 ] ; then
   echo "The maximum number of splits level must be passed as argument"
@@ -23,16 +23,45 @@ while [ "$1" != "" ]; do
     -cutter)
       Cut="yes"; shift; chk=$1; shift
       ;;
-    \?)
+    -extract)
+      Extract="yes"; shift; ext=$1; shift
+      ;;
+    *)
       print_usage
       exit 1
       ;;
   esac
 done
-if [ "$chk" == "check_only" ] ; then
-  cutchk=1
-else
-  cutchk=0
+if [ "$Cut" == "yes" ] ; then
+  case $chk in
+    do)
+      cutchk=T
+     ;;
+    check_only)
+      cutchk=F
+     ;;
+    *)
+      print_usage
+      exit 1
+     ;;
+  esac
+fi
+if [ "$Extract" == "yes" ] ; then
+  case $ext in
+    link)
+      Ext="ln -s "
+     ;;
+    copy)
+      Ext="cp "
+     ;;
+    move)
+      Ext="mv "
+     ;;
+    *)
+      print_usage
+      exit 1
+     ;;
+  esac
 fi
 if [ "$Bsp" == "yes" ] ; then
   rm -f bsplit*.log
@@ -50,9 +79,5 @@ if [ "$Cut" == "yes" ] ; then
   cc="'"$cc"SPLIT'"
   echo $cutchk > cutter.par
   echo $cc >> cutter.par
-  echo no_file_sol >> cutter.par
-  echo $cc >> cutter.par
-  echo 1 >> cutter.par
-  echo 1 >> cutter.par
-  cutter < cutter.par > cutter.log 2>&1
+  cutter > cutter.log 2>&1
 fi
