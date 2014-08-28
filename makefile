@@ -11,10 +11,10 @@ $(VERBOSE).SILENT:
 #-----------------------------------------------------------------------------------------------------------------------------------
 # options
 COMPILER  = intel
-DEBUG     = yes
+DEBUG     = no
 F08STD    = yes
 PROFILING = no
-OPTIMIZE  = no
+OPTIMIZE  = yes
 OPENMP    = no
 
 .PHONY : DEFAULTRULE

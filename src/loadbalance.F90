@@ -619,8 +619,8 @@ contains
         call bsplit%split(split_performed=split_performed,mgl=mgl,leaf=leaf)
         if (split_performed) return
         bsplit => bsplit%bpl
-       enddo
-       exit do_bs !return
+      enddo
+      exit do_bs !return
     else
       cur => cur%bnl
     endif
@@ -1084,10 +1084,10 @@ logical::       save_lvl_lis=.false.      !< Flag for saving levele list.
 logical::       save_blk_growth=.false.   !< Flag for saving blocks growth history.
 logical::       is_file=.false.           !< Flag for inquiring the existance of input file.
 ! balancing parameters
-integer(I4P)::                Nbs=0         !< Number of blocks after splitting.
-real(R8P)::                   bal=3._R8P    !< Tollerance of maximum balancing.
-integer(I8P)::                Wi=0          !< Ideal work load per processor.
-integer(I8P)::                Wmax=0        !< Maximum work load over blocks.
+integer(I4P)::                Nbs=0              !< Number of blocks after splitting.
+real(R8P)::                   bal=3._R8P         !< Tollerance of maximum balancing.
+integer(I8P)::                Wi=0               !< Ideal work load per processor.
+integer(I8P)::                Wmax=0             !< Maximum work load over blocks.
 integer(I4P)::                bmax=0             !< Index of heaviest block.
 integer(I4P),   allocatable:: pf(:)              !< Prime factors for block splitting [...,9,7,5,3,2].
 character(Nc), allocatable::  pfc(:)             !< Dummy strings for prime factors parsing.
@@ -1182,7 +1182,7 @@ if (trim(fnamein)=='') then
   write(stderr,'(A)')' Error: a valid file name for input file must be provided!'
   stop
 else
-  froot = OS%basename(trim(fnamein))                                         ! basename of fnamein
+  froot = OS%basename(trim(fnamein))                                      ! basename of fnamein
   if (index(froot,'.grd')>0) froot = trim(froot(1:index(froot,'.grd')-1)) ! trimming .grd
   do l=1,99 ! loop over admissible levels
     if (index(froot,'.'//strz(2,l))>0) then
