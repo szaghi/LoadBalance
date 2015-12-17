@@ -12,6 +12,7 @@ if [ $# -eq 0 ] ; then
 fi
 #parsing command line
 chk=="not_check_only"
+Bsp="no"
 while [ "$1" != "" ]; do
   case $1 in
     -l)
@@ -75,9 +76,32 @@ fi
 if [ "$Cut" == "yes" ] ; then
   echo "Running cutter"
   lz=`printf "%4.4d" $Nl`
-  cc=`cat bsplit$lz.par | grep SPLIT | tail -n 1 | awk '{print $1}' | sed "s/'//g"`
-  cc="'"$cc"SPLIT'"
+  if [ -f bsplit$lz.par ]; then
+    cc=`cat bsplit$lz.par | grep SPLIT | tail -n 1 | awk '{print $1}' | sed "s/'//g"`
+    if [ "$cc" == "" ] ; then
+      cc='ccSPLIT'
+    fi
+  else
+    cc='cc'
+  fi
   echo $cutchk > cutter.par
   echo $cc >> cutter.par
   cutter > cutter.log 2>&1
 fi
+if [ "$Extract" == "yes" ] ; then
+  if [ "$Cut" == "yes" ] ; then
+    mkdir -p output
+    cd output
+    $Ext ../proc.input .
+    $Ext ../balanced-blk_groups.ini blk_groups.ini
+    if [ "$Bsp" == "yes" ] ; then
+      $Ext ../ccSPLIT*p??? .
+      perl-rename "s/SPLIT//g" ccSPLIT*
+      rm -f ../ccSPLIT*
+    else
+      $Ext ../cc*p??? .
+    fi
+    cd -
+  fi
+fi
+exit 0

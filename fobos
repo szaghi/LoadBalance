@@ -1,0 +1,38 @@
+[modes]
+modes = intel gnu
+
+[intel]
+help            = Compile with Intel ifort
+compiler        = Intel
+; cflags          = -cpp -c -O3 -assume realloc_lhs
+cflags          = -cpp -c -assume realloc_lhs -O0 -debug all -check all -warn all -extend-source 132 -traceback -gen-interfaces#-fpe-all=0 -fp-stack-check -fstack-protector-all -ftrapuv -no-ftz -std08
+lflags          = -assume realloc_lhs -O0 -debug all -check all -warn all -extend-source 132 -traceback -gen-interfaces#-fpe-all=0 -fp-stack-check -fstack-protector-all -ftrapuv -no-ftz -std08
+preproc         = -D_OSYSTEMuix
+mod_dir         = ./mod/
+obj_dir         = ./obj/
+build_dir       = ./build/
+src             = ./src/
+colors          = True
+quiet           = False
+jobs            = 10
+target          = src/loadbalance.F90
+output          = loadbalance
+log             = True
+cflags_heritage = True
+
+[gnu]
+help            = Compile with GNU gfortran
+compiler        = Gnu
+cflags          = -cpp -c -O2 -frealloc-lhs
+preproc         = -D_OSYSTEMuix
+mod_dir         = ./mod/
+obj_dir         = ./obj/
+build_dir       = ./build/
+src             = ./src/
+colors          = True
+quiet           = False
+jobs            = 10
+target          = src/loadbalance.F90
+output          = loadbalance
+log             = True
+cflags_heritage = True

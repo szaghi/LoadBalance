@@ -1,60 +1,8 @@
-!> @addtogroup GlobalVarPar Global Variables and Parameters
-!> List of global variables and parameters.
-!> @addtogroup Interface Interfaces
-!> List of explicitly defined interface.
-!> @addtogroup Library Modules Libraries
-!> List of modules containing libraries of procedures.
-!> @addtogroup PublicProcedure Public Procedures
-!> List of public procedures.
-!> @addtogroup PrivateProcedure Private Procedures
-!> List of private procedures.
-
-!> @ingroup Library
-!> @{
-!> @defgroup IR_PrecisionLibrary IR_Precision
-!> Portable kind-parameters module
-!> @}
-
-!> @ingroup Interface
-!> @{
-!> @defgroup IR_PrecisionInterface IR_Precision
-!> Portable kind-parameters module
-!> @}
-
-!> @ingroup GlobalVarPar
-!> @{
-!> @defgroup IR_PrecisionGlobalVarPar IR_Precision
-!> Portable kind-parameters module
-!> @}
-
-!> @ingroup PublicProcedure
-!> @{
-!> @defgroup IR_PrecisionPublicProcedure IR_Precision
-!> Portable kind-parameters module
-!> @}
-
-!> @ingroup PrivateProcedure
-!> @{
-!> @defgroup IR_PrecisionPrivateProcedure IR_Precision
-!> Portable kind-parameters module
-!> @}
-
-!> @brief     Module IR_Precision makes available some portable kind-parameters and some useful procedures to deal with them.
-!> @details   It also provides variables that contain the minimum and maximum representable values, smallest real values and
-!>            smallest representable differences by the running calculator.
-!>
-!>            Finally the module provides procedures to convert a string to number and vice versa, a function to check the endianism
-!>            of the running calculator and a procedure to print all the aboves values.
-!> @note The \em quadruple precision R16P could be activated defining \b r16p pre-processor flag (e.g. -Dr16p). Furthermore if
-!> compiling with Portland Group Compiler define the pre-processor flag \b pgf95 to avoid error in computing \em Zero variables:
-!> pgf compiler doesn't accept \b nearest built-in function in variables initialization.
-!> @author    Stefano Zaghi
-!> @version   1.0
-!> @date      2012-04-24
-!> @copyright GNU Public License version 3.
-!> @todo \b g95_test: Test g95 compiler
-!> @ingroup IR_PrecisionLibrary
+!< Pure Fortran (2003+) library for ensuring codes portability
 module IR_Precision
+!-----------------------------------------------------------------------------------------------------------------------------------
+!< Pure Fortran (2003+) library for ensuring codes portability
+!<{!README-IR_Precision.md!}
 !-----------------------------------------------------------------------------------------------------------------------------------
 USE, intrinsic:: ISO_FORTRAN_ENV, only: stdout => OUTPUT_UNIT, stderr => ERROR_UNIT ! Standard output/error logical units.
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -77,34 +25,32 @@ public:: NIknd, RIl, FIl
 public:: check_endian
 public:: bit_size,byte_size
 public:: str, strz, cton, bstr, bcton
+public:: digit
 public:: ir_initialized,IR_Init
 public:: IR_Print
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------------------------------------------------
-!> @ingroup IR_PrecisionGlobalVarPar
-!> @{
-logical:: ir_initialized = .false. !< Flag for chcecking the initialization of some variables that must be initialized by IR_Init.
-! Bit ordering of the running architecture:
-integer, parameter:: endianL = 1       !< Little endian parameter.
-integer, parameter:: endianB = 0       !< Big endian parameter.
-integer::            endian  = endianL !< Bit ordering: Little endian (endianL), or Big endian (endianB).
+logical::            ir_initialized = .false. !< Flag for chcecking the initialization of some variables that must be initialized.
+integer, parameter:: endianL        = 1       !< Little endian parameter.
+integer, parameter:: endianB        = 0       !< Big endian parameter.
+integer::            endian         = endianL !< Bit ordering: Little endian (endianL), or Big endian (endianB).
 
 ! The following are the portable kind parameters available.
 ! Real precision definitions:
 #ifdef r16p
-integer, parameter:: R16P = selected_real_kind(33,4931) !< 33  digits, range \f$[10^{-4931}, 10^{+4931} - 1]\f$; 128 bits.
+integer, parameter:: R16P = selected_real_kind(33,4931) !< 33  digits, range \([10^{-4931}, 10^{+4931} - 1]\); 128 bits.
 #else
 integer, parameter:: R16P = selected_real_kind(15,307)  !< Defined as R8P; 64 bits.
 #endif
-integer, parameter:: R8P  = selected_real_kind(15,307)  !< 15  digits, range \f$[10^{-307} , 10^{+307}  - 1]\f$; 64 bits.
-integer, parameter:: R4P  = selected_real_kind(6,37)    !< 6   digits, range \f$[10^{-37}  , 10^{+37}   - 1]\f$; 32 bits.
+integer, parameter:: R8P  = selected_real_kind(15,307)  !< 15  digits, range \([10^{-307} , 10^{+307}  - 1]\); 64 bits.
+integer, parameter:: R4P  = selected_real_kind(6,37)    !< 6   digits, range \([10^{-37}  , 10^{+37}   - 1]\); 32 bits.
 integer, parameter:: R_P  = R8P                         !< Default real precision.
 ! Integer precision definitions:
-integer, parameter:: I8P  = selected_int_kind(18) !< Range \f$[-2^{63},+2^{63} - 1]\f$, 19 digits plus sign; 64 bits.
-integer, parameter:: I4P  = selected_int_kind(9)  !< Range \f$[-2^{31},+2^{31} - 1]\f$, 10 digits plus sign; 32 bits.
-integer, parameter:: I2P  = selected_int_kind(4)  !< Range \f$[-2^{15},+2^{15} - 1]\f$, 5  digits plus sign; 16 bits.
-integer, parameter:: I1P  = selected_int_kind(2)  !< Range \f$[-2^{7} ,+2^{7}  - 1]\f$, 3  digits plus sign; 8  bits.
+integer, parameter:: I8P  = selected_int_kind(18) !< Range \([-2^{63},+2^{63} - 1]\), 19 digits plus sign; 64 bits.
+integer, parameter:: I4P  = selected_int_kind(9)  !< Range \([-2^{31},+2^{31} - 1]\), 10 digits plus sign; 32 bits.
+integer, parameter:: I2P  = selected_int_kind(4)  !< Range \([-2^{15},+2^{15} - 1]\), 5  digits plus sign; 16 bits.
+integer, parameter:: I1P  = selected_int_kind(2)  !< Range \([-2^{7} ,+2^{7}  - 1]\), 3  digits plus sign; 8  bits.
 integer, parameter:: I_P  = I4P                   !< Default integer precision.
 
 ! Format parameters useful for writing in a well-ascii-format numeric variables.
@@ -145,55 +91,63 @@ character(5),  parameter:: FIl(1:NIknd)=[FI8P,FI4P,FI2P//' ',FI1P//' ',FI_P] !< 
 
 ! Useful parameters for handling numbers ranges.
 ! Real min and max values:
-real(R16P), parameter:: MinR16P = -huge(1._R16P), MaxR16P = huge(1._R16P) !< Min and max values of kind=R16P variable.
-real(R8P),  parameter:: MinR8P  = -huge(1._R8P ), MaxR8P  = huge(1._R8P ) !< Min and max values of kind=R8P variable.
-real(R4P),  parameter:: MinR4P  = -huge(1._R4P ), MaxR4P  = huge(1._R4P ) !< Min and max values of kind=R4P variable.
-real(R_P),  parameter:: MinR_P  = MinR8P,         MaxR_P  = MaxR8P        !< Min and max values of kind=R_P variable.
+real(R16P), parameter:: MinR16P = -huge(1._R16P) !< Minimum value of kind=R16P variable.
+real(R16P), parameter:: MaxR16P =  huge(1._R16P) !< Maximum value of kind=R16P variable.
+real(R8P),  parameter:: MinR8P  = -huge(1._R8P ) !< Minimum value of kind=R8P variable.
+real(R8P),  parameter:: MaxR8P  =  huge(1._R8P ) !< Maximum value of kind=R8P variable.
+real(R4P),  parameter:: MinR4P  = -huge(1._R4P ) !< Minimum value of kind=R4P variable.
+real(R4P),  parameter:: MaxR4P  =  huge(1._R4P ) !< Maximum value of kind=R4P variable.
+real(R_P),  parameter:: MinR_P  = MinR8P         !< Minimum value of kind=R_P variable.
+real(R_P),  parameter:: MaxR_P  = MaxR8P         !< Maximum value of kind=R_P variable.
 ! Real number of bits/bytes
-integer(I2P):: BIR16P, BYR16P !< Number of bits/bytes of kind=R16P variable.
-integer(I1P):: BIR8P,  BYR8P  !< Number of bits/bytes of kind=R8P variable.
-integer(I1P):: BIR4P,  BYR4P  !< Number of bits/bytes of kind=R4P variable.
-integer(I1P):: BIR_P,  BYR_P  !< Number of bits/bytes of kind=R_P variable.
+integer(I2P):: BIR16P !< Number of bits of kind=R16P variable.
+integer(I1P):: BIR8P  !< Number of bits of kind=R8P variable.
+integer(I1P):: BIR4P  !< Number of bits of kind=R4P variable.
+integer(I1P):: BIR_P  !< Number of bits of kind=R_P variable.
+integer(I2P):: BYR16P !< Number of bytes of kind=R16P variable.
+integer(I1P):: BYR8P  !< Number of bytes of kind=R8P variable.
+integer(I1P):: BYR4P  !< Number of bytes of kind=R4P variable.
+integer(I1P):: BYR_P  !< Number of bytes of kind=R_P variable.
 ! Real smallest values:
-real(R16P), parameter:: smallR16P = tiny(1._R16P) !< Smallest representable value of kind=R16P variable.
-real(R8P),  parameter:: smallR8P  = tiny(1._R8P ) !< Smallest representable value of kind=R8P variable.
-real(R4P),  parameter:: smallR4P  = tiny(1._R4P ) !< Smallest representable value of kind=R4P variable.
-real(R_P),  parameter:: smallR_P  = smallR8P      !< Smallest representable value of kind=R_P variable.
+real(R16P), parameter:: smallR16P = tiny(1._R16P) !< Smallest (module) representable value of kind=R16P variable.
+real(R8P),  parameter:: smallR8P  = tiny(1._R8P ) !< Smallest (module) representable value of kind=R8P variable.
+real(R4P),  parameter:: smallR4P  = tiny(1._R4P ) !< Smallest (module) representable value of kind=R4P variable.
+real(R_P),  parameter:: smallR_P  = smallR8P      !< Smallest (module) representable value of kind=R_P variable.
 ! Integer min and max values:
-integer(I8P), parameter:: MinI8P = -huge(1_I8P), MaxI8P = huge(1_I8P) !< Min and max values of kind=I8P variable.
-integer(I4P), parameter:: MinI4P = -huge(1_I4P), MaxI4P = huge(1_I4P) !< Min and max values of kind=I4P variable.
-integer(I2P), parameter:: MinI2P = -huge(1_I2P), MaxI2P = huge(1_I2P) !< Min and max values of kind=I2P variable.
-integer(I1P), parameter:: MinI1P = -huge(1_I1P), MaxI1P = huge(1_I1P) !< Min and max values of kind=I1P variable.
-integer(I_P), parameter:: MinI_P = MinI4P,       MaxI_P = MaxI4P      !< Min and max values of kind=I_P variable.
+integer(I8P), parameter:: MinI8P = -huge(1_I8P) !< Minimum value of kind=I8P variable.
+integer(I4P), parameter:: MinI4P = -huge(1_I4P) !< Minimum value of kind=I4P variable.
+integer(I2P), parameter:: MinI2P = -huge(1_I2P) !< Minimum value of kind=I2P variable.
+integer(I1P), parameter:: MinI1P = -huge(1_I1P) !< Minimum value of kind=I1P variable.
+integer(I_P), parameter:: MinI_P = MinI4P       !< Minimum value of kind=I_P variable.
+integer(I8P), parameter:: MaxI8P =  huge(1_I8P) !< Maximum value of kind=I8P variable.
+integer(I4P), parameter:: MaxI4P =  huge(1_I4P) !< Maximum value of kind=I4P variable.
+integer(I2P), parameter:: MaxI2P =  huge(1_I2P) !< Maximum value of kind=I2P variable.
+integer(I1P), parameter:: MaxI1P =  huge(1_I1P) !< Maximum value of kind=I1P variable.
+integer(I_P), parameter:: MaxI_P =  MaxI4P      !< Maximum value of kind=I_P variable.
 ! Integer number of bits/bytes:
-integer(I8P), parameter:: BII8P = bit_size(MaxI8P), BYI8P = bit_size(MaxI8P)/8_I8P !< Number of bits/bytes of kind=I8P variable.
-integer(I4P), parameter:: BII4P = bit_size(MaxI4P), BYI4P = bit_size(MaxI4P)/8_I4P !< Number of bits/bytes of kind=I4P variable.
-integer(I2P), parameter:: BII2P = bit_size(MaxI2P), BYI2P = bit_size(MaxI2P)/8_I2P !< Number of bits/bytes of kind=I2P variable.
-integer(I1P), parameter:: BII1P = bit_size(MaxI1P), BYI1P = bit_size(MaxI1P)/8_I1P !< Number of bits/bytes of kind=I1P variable.
-integer(I_P), parameter:: BII_P = bit_size(MaxI_P), BYI_P = bit_size(MaxI_P)/8_I_P !< Number of bits/bytes of kind=I_P variable.
+integer(I8P), parameter:: BII8P = bit_size(MaxI8P)       !< Number of bits of kind=I8P variable.
+integer(I4P), parameter:: BII4P = bit_size(MaxI4P)       !< Number of bits of kind=I4P variable.
+integer(I2P), parameter:: BII2P = bit_size(MaxI2P)       !< Number of bits of kind=I2P variable.
+integer(I1P), parameter:: BII1P = bit_size(MaxI1P)       !< Number of bits of kind=I1P variable.
+integer(I_P), parameter:: BII_P = bit_size(MaxI_P)       !< Number of bits of kind=I_P variable.
+integer(I8P), parameter:: BYI8P = bit_size(MaxI8P)/8_I8P !< Number of bytes of kind=I8P variable.
+integer(I4P), parameter:: BYI4P = bit_size(MaxI4P)/8_I4P !< Number of bytes of kind=I4P variable.
+integer(I2P), parameter:: BYI2P = bit_size(MaxI2P)/8_I2P !< Number of bytes of kind=I2P variable.
+integer(I1P), parameter:: BYI1P = bit_size(MaxI1P)/8_I1P !< Number of bytes of kind=I1P variable.
+integer(I_P), parameter:: BYI_P = bit_size(MaxI_P)/8_I_P !< Number of bytes of kind=I_P variable.
 ! Smallest real representable difference by the running calculator.
-#ifdef pgf95
-real(R16P), parameter:: ZeroR16 = 0._R16P
-real(R8P),  parameter:: ZeroR8  = 0._R8P
-real(R4P),  parameter:: ZeroR4  = 0._R4P
-#else
 real(R16P), parameter:: ZeroR16 = nearest(1._R16P, 1._R16P) - &
                                   nearest(1._R16P,-1._R16P) !< Smallest representable difference of kind=R16P variable.
 real(R8P),  parameter:: ZeroR8  = nearest(1._R8P, 1._R8P) - &
                                   nearest(1._R8P,-1._R8P)   !< Smallest representable difference of kind=R8P variable.
 real(R4P),  parameter:: ZeroR4  = nearest(1._R4P, 1._R4P) - &
                                   nearest(1._R4P,-1._R4P)   !< Smallest representable difference of kind=R4P variable.
-#endif
 real(R_P),  parameter:: Zero    = ZeroR8                    !< Smallest representable difference of kind=R_P variable.
-!> @}
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 !-----------------------------------------------------------------------------------------------------------------------------------
-!> @brief Overloading of the intrinsic "bit_size" function for computing the number of bits of (also) real and character variables;
-!> variable,     intent(\b IN)::  <b>\em n</b> input;
-!> integer(I1P), intent(\b OUT):: <b>\em bits</b> output number of bits of input number.
-!> @ingroup IR_PrecisionInterface
 interface bit_size
+  !< Overloading of the intrinsic *bit_size* function for computing the number of bits of (also) real and character variables.
   module procedure                &
 #ifdef r16p
                    bit_size_R16p, &
@@ -202,9 +156,8 @@ interface bit_size
                    bit_size_R4P,  &
                    bit_size_chr
 endinterface
-!> @brief Overloading of the "byte_size" function for computing the number of bytes.
-!> @ingroup IR_PrecisionInterface
 interface byte_size
+  !< Overloading of the *byte_size* function for computing the number of bytes.
   module procedure                 &
                    byte_size_I8P,  &
                    byte_size_I4P,  &
@@ -217,12 +170,8 @@ interface byte_size
                    byte_size_R4P,  &
                    byte_size_chr
 endinterface
-!> @brief Procedure for converting number, real and integer, to string (number to string type casting);
-!> logical, intent(\b IN), optional:: <b>\em no_sign</b> flag for do not write sign;
-!> number,  intent(\b IN)::           <b>\em n</b> input number;
-!> string,  intent(\b OUT)::          <b>\em str</b> output string.
-!> @ingroup IR_PrecisionInterface
 interface str
+  !< Procedure for converting number, real and integer, to string (number to string type casting).
   module procedure                    &
 #ifdef r16p
                    strf_R16P,str_R16P,&
@@ -232,25 +181,28 @@ interface str
                    strf_I8P ,str_I8P, &
                    strf_I4P ,str_I4P, &
                    strf_I2P ,str_I2P, &
-                   strf_I1P ,str_I1P
+                   strf_I1P ,str_I1P, &
+                             str_bol, &
+#ifdef r16p
+                             str_a_R16P,&
+#endif
+                             str_a_R8P, &
+                             str_a_R4P, &
+                             str_a_I8P, &
+                             str_a_I4P, &
+                             str_a_I2P, &
+                             str_a_I1P
 endinterface
-!> @brief Procedure for converting number, integer, to string, prefixing with the right number of zeros (number to string type
-!> casting with zero padding);
-!> number,  intent(\b IN), optional:: <b>\em no_zpad</b> number of padding zeros;
-!> number,  intent(\b IN)::           <b>\em n  </b> input number;
-!> string,  intent(\b OUT)::          <b>\em str</b> output string.
-!> @ingroup IR_PrecisionInterface
 interface strz
+  !< Procedure for converting number, integer, to string, prefixing with the right number of zeros (number to string type
+  !< casting with zero padding).
   module procedure strz_I8P,  &
                    strz_I4P,  &
                    strz_I2P,  &
                    strz_I1P
 endinterface
-!> @brief Procedure for converting string to number, real or initeger, (string to number type casting);
-!> string,  intent(\b IN)::  <b>\em str</b> input string;
-!> number,  intent(\b OUT):: <b>\em n  </b> output number.
-!> @ingroup IR_PrecisionInterface
 interface cton
+  !< Procedure for converting string to number, real or initeger, (string to number type casting).
   module procedure            &
 #ifdef r16p
                    ctor_R16P, &
@@ -262,11 +214,8 @@ interface cton
                    ctoi_I2P,  &
                    ctoi_I1P
 endinterface
-!> @brief Procedure for converting number, real and integer, to bit-string (number to bit-string type casting);
-!> number,  intent(\b IN)::  <b>\em n</b> input number;
-!> string,  intent(\b OUT):: <b>\em bstr</b> output bit-string.
-!> @ingroup IR_PrecisionInterface
 interface bstr
+  !< Procedure for converting number, real and integer, to bit-string (number to bit-string type casting).
   module procedure           &
 #ifdef r16p
                    bstr_R16P,&
@@ -278,11 +227,8 @@ interface bstr
                    bstr_I2P, &
                    bstr_I1P
 endinterface
-!> @brief Procedure for converting bit-string to number, real or initeger, (bit-string to number type casting);
-!> string,  intent(\b IN)::  <b>\em bstr</b> input bit-string;
-!> number,  intent(\b OUT):: <b>\em n</b> output number.
-!> @ingroup IR_PrecisionInterface
 interface bcton
+  !< Procedure for converting bit-string to number, real or initeger, (bit-string to number type casting).
   module procedure            &
 #ifdef r16p
                    bctor_R16P, &
@@ -294,12 +240,15 @@ interface bcton
                    bctoi_I2P,  &
                    bctoi_I1P
 endinterface
+interface digit
+  !< Procedure for computing the number of digits in decimal base of the input integer.
+  module procedure digit_I8,digit_I4,digit_I2,digit_I1
+endinterface
 !-----------------------------------------------------------------------------------------------------------------------------------
 contains
-  !> @ingroup IR_PrecisionPublicProcedure
-  !> @{
-  !> @brief Procedure for checking if the type of the bit ordering of the running architecture is little endian.
   pure function is_little_endian() result(is_little)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for checking if the type of the bit ordering of the running architecture is little endian.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical::      is_little !< Logical output: true is the running architecture uses little endian ordering, false otherwise.
@@ -313,9 +262,11 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction is_little_endian
 
-  !> @brief Subroutine for checking the type of bit ordering (big or little endian) of the running architecture; the result is
-  !> stored into the "endian" global variable.
   subroutine check_endian()
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Subroutine for checking the type of bit ordering (big or little endian) of the running architecture.
+  !<
+  !> @note The result is stored into the *endian* global variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -329,12 +280,10 @@ contains
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endsubroutine check_endian
-  !> @}
 
-  !> @ingroup IR_PrecisionPrivateProcedure
-  !> @{
-  !> @brief Procedure for computing the number of bits of a real variable.
   elemental function bit_size_R16P(r) result(bits)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bits of a real variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R16P), intent(IN):: r       !< Real variable whose number of bits must be computed.
@@ -348,8 +297,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bit_size_R16P
 
-  !> @brief Procedure for computing the number of bits of a real variable.
   elemental function bit_size_R8P(r) result(bits)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bits of a real variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R8P), intent(IN):: r       !< Real variable whose number of bits must be computed.
@@ -363,8 +313,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bit_size_R8P
 
-  !> @brief Procedure for computing the number of bits of a real variable.
   elemental function bit_size_R4P(r) result(bits)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bits of a real variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R4P), intent(IN):: r       !< Real variable whose number of bits must be computed.
@@ -378,8 +329,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bit_size_R4P
 
-  !> @brief Procedure for computing the number of bits of a character variable.
   elemental function bit_size_chr(c) result(bits)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bits of a character variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: c       !< Character variable whose number of bits must be computed.
@@ -393,8 +345,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bit_size_chr
 
-  !> @brief Procedure for computing the number of bytes of an integer variable.
   elemental function byte_size_I8P(i) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of an integer variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I8P), intent(IN):: i     !< Integer variable whose number of bytes must be computed.
@@ -407,8 +360,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_I8P
 
-  !> @brief Procedure for computing the number of bytes of an integer variable.
   elemental function byte_size_I4P(i) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of an integer variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I4P), intent(IN):: i     !< Integer variable whose number of bytes must be computed.
@@ -421,8 +375,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_I4P
 
-  !> @brief Procedure for computing the number of bytes of an integer variable.
   elemental function byte_size_I2P(i) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of an integer variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I2P), intent(IN):: i     !< Integer variable whose number of bytes must be computed.
@@ -435,8 +390,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_I2P
 
-  !> @brief Procedure for computing the number of bytes of an integer variable.
   elemental function byte_size_I1P(i) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of an integer variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I1P), intent(IN):: i     !< Integer variable whose number of bytes must be computed.
@@ -449,8 +405,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_I1P
 
-  !> @brief Procedure for computing the number of bytes of a real variable.
   elemental function byte_size_R16P(r) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of a real variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R16P), intent(IN):: r     !< Real variable whose number of bytes must be computed.
@@ -463,8 +420,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_R16P
 
-  !> @brief Procedure for computing the number of bytes of a real variable.
   elemental function byte_size_R8P(r) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of a real variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R8P), intent(IN):: r     !< Real variable whose number of bytes must be computed.
@@ -477,8 +435,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_R8P
 
-  !> @brief Procedure for computing the number of bytes of a real variable.
   elemental function byte_size_R4P(r) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of a real variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R4P), intent(IN):: r     !< Real variable whose number of bytes must be computed.
@@ -491,8 +450,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_R4P
 
-  !> @brief Procedure for computing the number of bytes of a character variable.
   elemental function byte_size_chr(c) result(bytes)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of bytes of a character variable.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: c     !< Character variable whose number of bytes must be computed.
@@ -505,8 +465,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction byte_size_chr
 
-  !> @brief Procedure for converting real to string. This function achieves casting of real to string.
   elemental function strf_R16P(fm,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string. This function achieves casting of real to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: fm  !< Format different from the standard for the kind.
@@ -520,8 +481,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strf_R16P
 
-  !> @brief Procedure for converting real to string. This function achieves casting of real to string.
   elemental function strf_R8P(fm,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string. This function achieves casting of real to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: fm  !< Format different from the standard for the kind.
@@ -535,8 +497,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strf_R8P
 
-  !> @brief Procedure for converting real to string. This function achieves casting of real to string.
   elemental function strf_R4P(fm,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string. This function achieves casting of real to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: fm  !< Format different from the standard for the kind.
@@ -550,8 +513,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strf_R4P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function strf_I8P(fm,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: fm  !< Format different from the standard for the kind.
@@ -565,8 +529,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strf_I8P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function strf_I4P(fm,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: fm  !< Format different from the standard for the kind.
@@ -580,8 +545,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strf_I4P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function strf_I2P(fm,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: fm  !< Format different from the standard for the kind.
@@ -595,8 +561,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strf_I2P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function strf_I1P(fm,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: fm  !< Format different from the standard for the kind.
@@ -610,8 +577,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strf_I1P
 
-  !> @brief Procedure for converting real to string. This function achieves casting of real to string.
   elemental function str_R16P(no_sign,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string. This function achieves casting of real to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical,    intent(IN), optional:: no_sign !< Flag for leaving out the sign.
@@ -627,8 +595,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction str_R16P
 
-  !> @brief Procedure for converting real to string. This function achieves casting of real to string.
   elemental function str_R8P(no_sign,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string. This function achieves casting of real to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical,      intent(IN), optional:: no_sign !< Flag for leaving out the sign.
@@ -644,8 +613,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction str_R8P
 
-  !> @brief Procedure for converting real to string. This function achieves casting of real to string.
   elemental function str_R4P(no_sign,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string. This function achieves casting of real to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical,   intent(IN), optional:: no_sign !< Flag for leaving out the sign.
@@ -661,8 +631,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction str_R4P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function str_I8P(no_sign,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical,      intent(IN), optional:: no_sign !< Flag for leaving out the sign.
@@ -679,8 +650,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction str_I8P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function str_I4P(no_sign,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical,      intent(IN), optional:: no_sign !< Flag for leaving out the sign.
@@ -697,8 +669,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction str_I4P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function str_I2P(no_sign,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical,      intent(IN), optional:: no_sign !< Flag for leaving out the sign.
@@ -715,8 +688,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction str_I2P
 
-  !> @brief Procedure for converting integer to string. This function achieves casting of integer to string.
   elemental function str_I1P(no_sign,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string. This function achieves casting of integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   logical,      intent(IN), optional:: no_sign !< Flag for leaving out the sign.
@@ -733,9 +707,256 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction str_I1P
 
-  !> @brief Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
-  !> integer to string.
+  elemental function str_bol(n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting logical to string. This function achieves casting of logical to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical, intent(IN):: n   !< Logical to be converted.
+  character(1)::        str !< Returned string containing input number plus padding zeros.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  write(str,'(L1)') n
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_bol
+
+  pure function str_a_R16P(no_sign,delimiters,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real (array) to string. This function achieves casting of real to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical,      intent(IN), optional:: no_sign         !< Flag for leaving out the sign.
+  character(*), intent(IN), optional:: delimiters(1:2) !< Eventual delimiters of array values.
+  real(R16P),   intent(IN)::           n(:)            !< Real array to be converted.
+  character(len=:), allocatable::      str             !< Returned string containing input number.
+  character(DR16P)::                   strn            !< String containing of element of input array number.
+  integer::                            i               !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  if (present(no_sign)) then
+    str = ''
+    do i=1,size(n)
+      strn = str_R16P(no_sign=no_sign, n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  else
+    str = ''
+    do i=1,size(n)
+      strn = str_R16P(n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  endif
+  str = trim(str(2:))
+  if (present(delimiters)) str = delimiters(1)//str//delimiters(2)
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_a_R16P
+
+  pure function str_a_R8P(no_sign,delimiters,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real (array) to string. This function achieves casting of real to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical,      intent(IN), optional:: no_sign         !< Flag for leaving out the sign.
+  character(*), intent(IN), optional:: delimiters(1:2) !< Eventual delimiters of array values.
+  real(R8P),    intent(IN)::           n(:)            !< Real array to be converted.
+  character(len=:), allocatable::      str             !< Returned string containing input number.
+  character(DR8P)::                    strn            !< String containing of element of input array number.
+  integer::                            i               !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  if (present(no_sign)) then
+    str = ''
+    do i=1,size(n)
+      strn = str_R8P(no_sign=no_sign, n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  else
+    str = ''
+    do i=1,size(n)
+      strn = str_R8P(n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  endif
+  str = trim(str(2:))
+  if (present(delimiters)) str = delimiters(1)//str//delimiters(2)
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_a_R8P
+
+  pure function str_a_R4P(no_sign,delimiters,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real (array) to string. This function achieves casting of real to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical,      intent(IN), optional:: no_sign         !< Flag for leaving out the sign.
+  character(*), intent(IN), optional:: delimiters(1:2) !< Eventual delimiters of array values.
+  real(R4P),    intent(IN)::           n(:)            !< Real array to be converted.
+  character(len=:), allocatable::      str             !< Returned string containing input number.
+  character(DR4P)::                    strn            !< String containing of element of input array number.
+  integer::                            i               !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  if (present(no_sign)) then
+    str = ''
+    do i=1,size(n)
+      strn = str_R4P(no_sign=no_sign, n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  else
+    str = ''
+    do i=1,size(n)
+      strn = str_R4P(n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  endif
+  str = trim(str(2:))
+  if (present(delimiters)) str = delimiters(1)//str//delimiters(2)
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_a_R4P
+
+  pure function str_a_I8P(no_sign,delimiters,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer (array) to string. This function achieves casting of integer to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical,      intent(IN), optional:: no_sign         !< Flag for leaving out the sign.
+  character(*), intent(IN), optional:: delimiters(1:2) !< Eventual delimiters of array values.
+  integer(I8P), intent(IN)::           n(:)            !< Integer array to be converted.
+  character(len=:), allocatable::      str             !< Returned string containing input number.
+  character(DI8P)::                    strn            !< String containing of element of input array number.
+  integer::                            i               !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  if (present(no_sign)) then
+    str = ''
+    do i=1,size(n)
+      strn = str_I8P(no_sign=no_sign, n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  else
+    str = ''
+    do i=1,size(n)
+      strn = str_I8P(n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  endif
+  str = trim(str(2:))
+  if (present(delimiters)) str = delimiters(1)//str//delimiters(2)
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_a_I8P
+
+  pure function str_a_I4P(no_sign,delimiters,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer (array) to string. This function achieves casting of integer to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical,      intent(IN), optional:: no_sign         !< Flag for leaving out the sign.
+  character(*), intent(IN), optional:: delimiters(1:2) !< Eventual delimiters of array values.
+  integer(I4P), intent(IN)::           n(:)            !< Integer array to be converted.
+  character(len=:), allocatable::      str             !< Returned string containing input number.
+  character(DI4P)::                    strn            !< String containing of element of input array number.
+  integer::                            i               !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  if (present(no_sign)) then
+    str = ''
+    do i=1,size(n)
+      strn = str_I4P(no_sign=no_sign, n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  else
+    str = ''
+    do i=1,size(n)
+      strn = str_I4P(n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  endif
+  str = trim(str(2:))
+  if (present(delimiters)) str = delimiters(1)//str//delimiters(2)
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_a_I4P
+
+  pure function str_a_I2P(no_sign,delimiters,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer (array) to string. This function achieves casting of integer to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical,      intent(IN), optional:: no_sign         !< Flag for leaving out the sign.
+  character(*), intent(IN), optional:: delimiters(1:2) !< Eventual delimiters of array values.
+  integer(I2P), intent(IN)::           n(:)            !< Integer array to be converted.
+  character(len=:), allocatable::      str             !< Returned string containing input number.
+  character(DI2P)::                    strn            !< String containing of element of input array number.
+  integer::                            i               !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  if (present(no_sign)) then
+    str = ''
+    do i=1,size(n)
+      strn = str_I2P(no_sign=no_sign, n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  else
+    str = ''
+    do i=1,size(n)
+      strn = str_I2P(n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  endif
+  str = trim(str(2:))
+  if (present(delimiters)) str = delimiters(1)//str//delimiters(2)
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_a_I2P
+
+  pure function str_a_I1P(no_sign,delimiters,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer (array) to string. This function achieves casting of integer to string.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  logical,      intent(IN), optional:: no_sign         !< Flag for leaving out the sign.
+  character(*), intent(IN), optional:: delimiters(1:2) !< Eventual delimiters of array values.
+  integer(I1P), intent(IN)::           n(:)            !< Integer array to be converted.
+  character(len=:), allocatable::      str             !< Returned string containing input number.
+  character(DI1P)::                    strn            !< String containing of element of input array number.
+  integer::                            i               !< Counter.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  if (present(no_sign)) then
+    str = ''
+    do i=1,size(n)
+      strn = str_I1P(no_sign=no_sign, n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  else
+    str = ''
+    do i=1,size(n)
+      strn = str_I1P(n=n(i))
+      str = str//','//trim(strn)
+    enddo
+  endif
+  str = trim(str(2:))
+  if (present(delimiters)) str = delimiters(1)//str//delimiters(2)
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction str_a_I1P
+
   elemental function strz_I8P(nz_pad,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
+  !< integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I4P), intent(IN), optional:: nz_pad !< Number of zeros padding.
@@ -751,9 +972,10 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strz_I8P
 
-  !> @brief Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
-  !> integer to string.
   elemental function strz_I4P(nz_pad,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
+  !< integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I4P), intent(IN), optional:: nz_pad !< Number of zeros padding.
@@ -769,9 +991,10 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strz_I4P
 
-  !> @brief Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
-  !> integer to string.
   elemental function strz_I2P(nz_pad,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
+  !< integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I4P), intent(IN), optional:: nz_pad !< Number of zeros padding.
@@ -787,9 +1010,10 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strz_I2P
 
-  !> @brief Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
-  !> integer to string.
   elemental function strz_I1P(nz_pad,n) result(str)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string, prefixing with the right number of zeros. This function achieves casting of
+  !< integer to string.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I4P), intent(IN), optional:: nz_pad !< Number of zeros padding.
@@ -805,156 +1029,186 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction strz_I1P
 
-  !> @brief Procedure for converting string to real. This function achieves casting of string to real.
-  function ctor_R16P(str,knd) result(n)
+  function ctor_R16P(pref,error,str,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting string to real. This function achieves casting of string to real.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
-  character(*), intent(IN):: str !< String containing input number.
-  real(R16P),   intent(IN):: knd !< Number kind.
-  real(R16P)::               n   !< Number returned.
-  integer(I4P)::             err !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*), optional, intent(IN)::  pref  !< Prefixing string.
+  integer(I4P), optional, intent(OUT):: error !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*),           intent(IN)::  str   !< String containing input number.
+  real(R16P),             intent(IN)::  knd   !< Number kind.
+  real(R16P)::                          n     !< Number returned.
+  integer(I4P)::                        err   !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(len=:), allocatable::       prefd !< Prefixing string.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   read(str,*,iostat=err) n ! Casting of str to n.
   if (err/=0) then
-    write(stderr,'(A)')             'Conversion of string "'//str//'" to real failed'
-    write(stderr,'(A,'//FR16P//')') 'Kind parameter ',knd
-    write(stderr,'(A)')             'Function used "ctor_R16P"'
+    prefd = '' ; if (present(pref)) prefd = pref
+    write(stderr,'(A,I1,A)') prefd//' Error: conversion of string "'//str//'" to real failed! real(',kind(knd),')'
   endif
+  if (present(error)) error = err
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction ctor_R16P
 
-  !> @brief Procedure for converting string to real. This function achieves casting of string to real.
-  function ctor_R8P(str,knd) result(n)
+  function ctor_R8P(pref,error,str,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting string to real. This function achieves casting of string to real.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
-  character(*), intent(IN):: str !< String containing input number.
-  real(R8P),    intent(IN):: knd !< Number kind.
-  real(R8P)::                n   !< Number returned.
-  integer(I4P)::             err !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*), optional, intent(IN)::  pref  !< Prefixing string.
+  integer(I4P), optional, intent(OUT):: error !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*),           intent(IN)::  str   !< String containing input number.
+  real(R8P),              intent(IN)::  knd   !< Number kind.
+  real(R8P)::                           n     !< Number returned.
+  integer(I4P)::                        err   !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(len=:), allocatable::       prefd !< Prefixing string.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   read(str,*,iostat=err) n ! Casting of str to n.
   if (err/=0) then
-    write(stderr,'(A)')            'Conversion of string "'//str//'" to real failed'
-    write(stderr,'(A,'//FR8P//')') 'Kind parameter ',knd
-    write(stderr,'(A)')            'Function used "ctor_R8P"'
+    prefd = '' ; if (present(pref)) prefd = pref
+    write(stderr,'(A,I1,A)') prefd//' Error: conversion of string "'//str//'" to real failed! real(',kind(knd),')'
   endif
+  if (present(error)) error = err
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction ctor_R8P
 
-  !> @brief Procedure for converting string to real. This function achieves casting of string to real.
-  function ctor_R4P(str,knd) result(n)
+  function ctor_R4P(pref,error,str,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting string to real. This function achieves casting of string to real.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
-  character(*), intent(IN):: str !< String containing input number.
-  real(R4P),    intent(IN):: knd !< Number kind.
-  real(R4P)::                n   !< Number returned.
-  integer(I4P)::             err !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*), optional, intent(IN)::  pref  !< Prefixing string.
+  integer(I4P), optional, intent(OUT):: error !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*),           intent(IN)::  str   !< String containing input number.
+  real(R4P),              intent(IN)::  knd   !< Number kind.
+  real(R4P)::                           n     !< Number returned.
+  integer(I4P)::                        err   !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(len=:), allocatable::       prefd !< Prefixing string.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   read(str,*,iostat=err) n ! Casting of str to n.
   if (err/=0) then
-    write(stderr,'(A)')            'Conversion of string "'//str//'" to real failed'
-    write(stderr,'(A,'//FR4P//')') 'Kind parameter ',knd
-    write(stderr,'(A)')            'Function used "ctor_R4P"'
+    prefd = '' ; if (present(pref)) prefd = pref
+    write(stderr,'(A,I1,A)') prefd//' Error: conversion of string "'//str//'" to real failed! real(',kind(knd),')'
   endif
+  if (present(error)) error = err
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction ctor_R4P
 
-  !> @brief Procedure for converting string to integer. This function achieves casting of string to integer.
-  function ctoi_I8P(str,knd) result(n)
+  function ctoi_I8P(pref,error,str,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting string to integer. This function achieves casting of string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
-  character(*), intent(IN):: str !< String containing input number.
-  integer(I8P), intent(IN):: knd !< Number kind.
-  integer(I8P)::             n   !< Number returned.
-  integer(I4P)::             err !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*), optional, intent(IN)::  pref  !< Prefixing string.
+  integer(I4P), optional, intent(OUT):: error !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*),           intent(IN)::  str   !< String containing input number.
+  integer(I8P),           intent(IN)::  knd   !< Number kind.
+  integer(I8P)::                        n     !< Number returned.
+  integer(I4P)::                        err   !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(len=:), allocatable::       prefd !< Prefixing string.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   read(str,*,iostat=err) n ! Casting of str to n.
   if (err/=0) then
-    write(stderr,'(A)')            'Conversion of string "'//str//'" to integer failed'
-    write(stderr,'(A,'//FI8P//')') 'Kind parameter ',knd
-    write(stderr,'(A)')            'Function used "ctoi_I8P"'
+    prefd = '' ; if (present(pref)) prefd = pref
+    write(stderr,'(A,I1,A)') prefd//' Error: conversion of string "'//str//'" to integer failed! integer(',kind(knd),')'
   endif
+  if (present(error)) error = err
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction ctoi_I8P
 
-  !> @brief Procedure for converting string to integer. This function achieves casting of string to integer.
-  function ctoi_I4P(str,knd) result(n)
+  function ctoi_I4P(pref,error,str,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting string to integer. This function achieves casting of string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
-  character(*), intent(IN):: str !< String containing input number.
-  integer(I4P), intent(IN):: knd !< Number kind.
-  integer(I4P)::             n   !< Number returned.
-  integer(I4P)::             err !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*), optional, intent(IN)::  pref  !< Prefixing string.
+  integer(I4P), optional, intent(OUT):: error !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*),           intent(IN)::  str   !< String containing input number.
+  integer(I4P),           intent(IN)::  knd   !< Number kind.
+  integer(I4P)::                        n     !< Number returned.
+  integer(I4P)::                        err   !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(len=:), allocatable::       prefd !< Prefixing string.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   read(str,*,iostat=err) n ! Casting of str to n.
   if (err/=0) then
-    write(stderr,'(A)')            'Conversion of string "'//str//'" to integer failed'
-    write(stderr,'(A,'//FI4P//')') 'Kind parameter ',knd
-    write(stderr,'(A)')            'Function used "ctoi_I4P"'
+    prefd = '' ; if (present(pref)) prefd = pref
+    write(stderr,'(A,I1,A)') prefd//' Error: conversion of string "'//str//'" to integer failed! integer(',kind(knd),')'
   endif
+  if (present(error)) error = err
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction ctoi_I4P
 
-  !> @brief Procedure for converting string to integer. This function achieves casting of string to integer.
-  function ctoi_I2P(str,knd) result(n)
+  function ctoi_I2P(pref,error,str,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting string to integer. This function achieves casting of string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
-  character(*), intent(IN):: str !< String containing input number.
-  integer(I2P), intent(IN):: knd !< Number kind.
-  integer(I2P)::             n   !< Number returned.
-  integer(I4P)::             err !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*), optional, intent(IN)::  pref  !< Prefixing string.
+  integer(I4P), optional, intent(OUT):: error !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*),           intent(IN)::  str   !< String containing input number.
+  integer(I2P),           intent(IN)::  knd   !< Number kind.
+  integer(I2P)::                        n     !< Number returned.
+  integer(I4P)::                        err   !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(len=:), allocatable::       prefd !< Prefixing string.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   read(str,*,iostat=err) n ! Casting of str to n.
   if (err/=0) then
-    write(stderr,'(A)')            'Conversion of string "'//str//'" to integer failed'
-    write(stderr,'(A,'//FI2P//')') 'Kind parameter ',knd
-    write(stderr,'(A)')            'Function used "ctoi_I2P"'
+    prefd = '' ; if (present(pref)) prefd = pref
+    write(stderr,'(A,I1,A)') prefd//' Error: conversion of string "'//str//'" to integer failed! integer(',kind(knd),')'
   endif
+  if (present(error)) error = err
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction ctoi_I2P
 
-  !> @brief Procedure for converting string to integer. This function achieves casting of string to integer.
-  function ctoi_I1P(str,knd) result(n)
+  function ctoi_I1P(pref,error,str,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting string to integer. This function achieves casting of string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
-  character(*), intent(IN):: str !< String containing input number.
-  integer(I1P), intent(IN):: knd !< Number kind.
-  integer(I1P)::             n   !< Number returned.
-  integer(I4P)::             err !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*), optional, intent(IN)::  pref  !< Prefixing string.
+  integer(I4P), optional, intent(OUT):: error !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(*),           intent(IN)::  str   !< String containing input number.
+  integer(I1P),           intent(IN)::  knd   !< Number kind.
+  integer(I1P)::                        n     !< Number returned.
+  integer(I4P)::                        err   !< Error trapping flag: 0 no errors, >0 error occurs.
+  character(len=:), allocatable::       prefd !< Prefixing string.
   !---------------------------------------------------------------------------------------------------------------------------------
 
   !---------------------------------------------------------------------------------------------------------------------------------
   read(str,*,iostat=err) n ! Casting of str to n.
   if (err/=0) then
-    write(stderr,'(A)')            'Conversion of string "'//str//'" to integer failed'
-    write(stderr,'(A,'//FI1P//')') 'Kind parameter ',knd
-    write(stderr,'(A)')            'Function used "ctoi_I1P"'
+    prefd = '' ; if (present(pref)) prefd = pref
+    write(stderr,'(A,I1,A)') prefd//' Error: conversion of string "'//str//'" to integer failed! integer(',kind(knd),')'
   endif
+  if (present(error)) error = err
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction ctoi_I1P
 
-  !> @brief Procedure for converting real to string of bits. This function achieves casting of real to bit-string.
-  !> @note It is assumed that R16P is represented by means of 128 bits, but this is not ensured in all architectures.
   elemental function bstr_R16P(n) result(bstr)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string of bits. This function achieves casting of real to bit-string.
+  !<
+  !< @note It is assumed that R16P is represented by means of 128 bits, but this is not ensured in all architectures.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R8P), intent(IN):: n    !< Real to be converted.
@@ -967,9 +1221,11 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bstr_R16P
 
-  !> @brief Procedure for converting real to string of bits. This function achieves casting of real to bit-string.
-  !> @note It is assumed that R8P is represented by means of 64 bits, but this is not ensured in all architectures.
   elemental function bstr_R8P(n) result(bstr)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string of bits. This function achieves casting of real to bit-string.
+  !<
+  !< @note It is assumed that R8P is represented by means of 64 bits, but this is not ensured in all architectures.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R8P), intent(IN):: n    !< Real to be converted.
@@ -982,9 +1238,11 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bstr_R8P
 
-  !> @brief Procedure for converting real to string of bits. This function achieves casting of real to bit-string.
-  !> @note It is assumed that R4P is represented by means of 32 bits, but this is not ensured in all architectures.
   elemental function bstr_R4P(n) result(bstr)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting real to string of bits. This function achieves casting of real to bit-string.
+  !<
+  !< @note It is assumed that R4P is represented by means of 32 bits, but this is not ensured in all architectures.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   real(R4P), intent(IN):: n    !< Real to be converted.
@@ -997,9 +1255,11 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bstr_R4P
 
-  !> @brief Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
-  !> @note It is assumed that I8P is represented by means of 64 bits, but this is not ensured in all architectures.
   elemental function bstr_I8P(n) result(bstr)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
+  !<
+  !< @note It is assumed that I8P is represented by means of 64 bits, but this is not ensured in all architectures.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I8P), intent(IN):: n    !< Real to be converted.
@@ -1012,9 +1272,11 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bstr_I8P
 
-  !> @brief Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
-  !> @note It is assumed that I4P is represented by means of 32 bits, but this is not ensured in all architectures.
   elemental function bstr_I4P(n) result(bstr)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
+  !<
+  !< @note It is assumed that I4P is represented by means of 32 bits, but this is not ensured in all architectures.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I4P), intent(IN):: n    !< Real to be converted.
@@ -1027,9 +1289,11 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bstr_I4P
 
-  !> @brief Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
-  !> @note It is assumed that I2P is represented by means of 16 bits, but this is not ensured in all architectures.
   elemental function bstr_I2P(n) result(bstr)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
+  !<
+  !< @note It is assumed that I2P is represented by means of 16 bits, but this is not ensured in all architectures.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I2P), intent(IN):: n    !< Real to be converted.
@@ -1042,9 +1306,11 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bstr_I2P
 
-  !> @brief Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
-  !> @note It is assumed that I1P is represented by means of 8 bits, but this is not ensured in all architectures.
   elemental function bstr_I1P(n) result(bstr)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting integer to string of bits. This function achieves casting of integer to bit-string.
+  !<
+  !< @note It is assumed that I1P is represented by means of 8 bits, but this is not ensured in all architectures.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   integer(I1P), intent(IN):: n    !< Real to be converted.
@@ -1057,8 +1323,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bstr_I1P
 
-  !> @brief Procedure for converting bit-string to real. This function achieves casting of bit-string to real.
   elemental function bctor_R8P(bstr,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting bit-string to real. This function achieves casting of bit-string to real.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: bstr !< String containing input number.
@@ -1072,8 +1339,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bctor_R8P
 
-  !> @brief Procedure for converting bit-string to real. This function achieves casting of bit-string to real.
   elemental function bctor_R4P(bstr,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting bit-string to real. This function achieves casting of bit-string to real.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: bstr !< String containing input number.
@@ -1087,8 +1355,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bctor_R4P
 
-  !> @brief Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   elemental function bctoi_I8P(bstr,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: bstr !< String containing input number.
@@ -1102,8 +1371,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bctoi_I8P
 
-  !> @brief Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   elemental function bctoi_I4P(bstr,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: bstr !< String containing input number.
@@ -1117,8 +1387,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bctoi_I4P
 
-  !> @brief Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   elemental function bctoi_I2P(bstr,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: bstr !< String containing input number.
@@ -1132,8 +1403,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bctoi_I2P
 
-  !> @brief Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   elemental function bctoi_I1P(bstr,knd) result(n)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for converting bit-string to integer. This function achieves casting of bit-string to integer.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), intent(IN):: bstr !< String containing input number.
@@ -1146,11 +1418,78 @@ contains
   return
   !---------------------------------------------------------------------------------------------------------------------------------
   endfunction bctoi_I1P
-  !> @}
 
-  !> Subroutine for initilizing module's variables that are not initialized into the definition specification.
-  !> @ingroup IR_PrecisionPublicProcedure
+  elemental function digit_I8(n) result(digit)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of digits in decimal base of the input integer.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  integer(I8P), intent(IN):: n     !< Input integer.
+  character(DI8P)::          str   !< Returned string containing input number plus padding zeros.
+  integer(I4P)::             digit !< Number of digits.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  write(str,FI8P) abs(n)         ! Casting of n to string.
+  digit = len_trim(adjustl(str)) ! Calculating the digits number of n.
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction digit_I8
+
+  elemental function digit_I4(n) result(digit)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of digits in decimal base of the input integer.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  integer(I4P), intent(IN):: n     !< Input integer.
+  character(DI4P)::          str   !< Returned string containing input number plus padding zeros.
+  integer(I4P)::             digit !< Number of digits.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  write(str,FI4P) abs(n)         ! Casting of n to string.
+  digit = len_trim(adjustl(str)) ! Calculating the digits number of n.
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction digit_I4
+
+  elemental function digit_I2(n) result(digit)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of digits in decimal base of the input integer.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  integer(I2P), intent(IN):: n     !< Input integer.
+  character(DI2P)::          str   !< Returned string containing input number plus padding zeros.
+  integer(I4P)::             digit !< Number of digits.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  write(str,FI2P) abs(n)         ! Casting of n to string.
+  digit = len_trim(adjustl(str)) ! Calculating the digits number of n.
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction digit_I2
+
+  elemental function digit_I1(n) result(digit)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for computing the number of digits in decimal base of the input integer.
+  !---------------------------------------------------------------------------------------------------------------------------------
+  implicit none
+  integer(I1P), intent(IN):: n     !< Input integer.
+  character(DI1P)::          str   !< Returned string containing input number plus padding zeros.
+  integer(I4P)::             digit !< Number of digits.
+  !---------------------------------------------------------------------------------------------------------------------------------
+
+  !---------------------------------------------------------------------------------------------------------------------------------
+  write(str,FI1P) abs(n)         ! Casting of n to string.
+  digit = len_trim(adjustl(str)) ! Calculating the digits number of n.
+  return
+  !---------------------------------------------------------------------------------------------------------------------------------
+  endfunction digit_I1
+
   subroutine IR_init()
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for initilizing module's variables that are not initialized into the definition specification.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   !---------------------------------------------------------------------------------------------------------------------------------
@@ -1172,9 +1511,9 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   endsubroutine IR_init
 
-  !>Subroutine for printing to the standard output the kind definition of reals and integers and the utility variables.
-  !> @ingroup IR_PrecisionPublicProcedure
   subroutine IR_Print(pref,iostat,iomsg,unit)
+  !---------------------------------------------------------------------------------------------------------------------------------
+  !< Procedure for printing to the standard output the kind definition of reals and integers and the utility variables.
   !---------------------------------------------------------------------------------------------------------------------------------
   implicit none
   character(*), optional, intent(IN)::  pref    !< Prefixing string.

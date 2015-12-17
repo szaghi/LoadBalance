@@ -50,7 +50,7 @@ integer(I1P), parameter:: tp_ALOG = 18 !< Array of character type.
 !> @ingroup Data_Type_SL_ListDerivedType
 type:: Type_SL_Link
   private
-  integer(I1p)::                tp=tp_NULL   !< Type of data.
+  integer(I1P)::                tp=tp_NULL   !< Type of data.
   integer(I1P),       pointer:: d(:)         !< Link data.
   type(Type_SL_Link), pointer:: n => null()  !< Pointer to the next link of the list.
   contains
