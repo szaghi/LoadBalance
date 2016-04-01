@@ -299,8 +299,13 @@ contains
         block%Nijk = Ni(1)
         do s=1,block%Ns
           b(block%l+1) = s
-          call block%bs(s)%set(a=block%a,g=block%g,c=block%c,gt=block%gt,l=block%l+1,ba=block%ba+s-1,b=b,dir=block%dir,&
-                               Ni=Ni(s),Nj=Nj(s),Nk=Nk(s),leaf=leaf)
+          if (allocated(block%gt)) then
+            call block%bs(s)%set(a=block%a,g=block%g,c=block%c,gt=block%gt,l=block%l+1,ba=block%ba+s-1,b=b,dir=block%dir,&
+                                 Ni=Ni(s),Nj=Nj(s),Nk=Nk(s),leaf=leaf)
+          else
+            call block%bs(s)%set(a=block%a,g=block%g,c=block%c,l=block%l+1,ba=block%ba+s-1,b=b,dir=block%dir,&
+                                 Ni=Ni(s),Nj=Nj(s),Nk=Nk(s),leaf=leaf)
+          endif
         enddo
         ! performing the shift of block%ba
         cur => leaf
@@ -494,22 +499,22 @@ contains
   !---------------------------------------------------------------------------------------------------------------------------------
   open(unit=Get_Unit(u),file='block'//trim(strz(4,block%a))//'-splits.his')
   sbuffer = trim(str(.true.,block%a))//         &
-            ' Ni:'//trim(str(.true.,block%Ni))//&
-            ' Nj:'//trim(str(.true.,block%Nj))//&
-            ' Nk:'//trim(str(.true.,block%Nk))//&
-            ' Ns:'//trim(str(.true.,block%Ns))//&
-            ' dir:'//trim(str(.true.,block%dir))
-  sbuffer = trim(sbuffer)//' PFi:'
+            ',Ni:'//trim(str(.true.,block%Ni))//&
+            ',Nj:'//trim(str(.true.,block%Nj))//&
+            ',Nk:'//trim(str(.true.,block%Nk))//&
+            ',Ns:'//trim(str(.true.,block%Ns))//&
+            ',dir:'//trim(str(.true.,block%dir))
+  sbuffer = trim(sbuffer)//',PFi:'
   do s=1,size(block%pfi,dim=1)-1
     sbuffer = trim(sbuffer)//trim(str(.true.,block%pfi(s)))//'-'
   enddo
   sbuffer = trim(sbuffer)//trim(str(.true.,block%pfi(size(block%pfi,dim=1))))
-  sbuffer = trim(sbuffer)//' PFj:'
+  sbuffer = trim(sbuffer)//',PFj:'
   do s=1,size(block%pfj,dim=1)-1
     sbuffer = trim(sbuffer)//trim(str(.true.,block%pfj(s)))//'-'
   enddo
   sbuffer = trim(sbuffer)//trim(str(.true.,block%pfj(size(block%pfj,dim=1))))
-  sbuffer = trim(sbuffer)//' PFk:'
+  sbuffer = trim(sbuffer)//',PFk:'
   do s=1,size(block%pfk,dim=1)-1
     sbuffer = trim(sbuffer)//trim(str(.true.,block%pfk(s)))//'-'
   enddo
@@ -535,23 +540,23 @@ contains
     !-------------------------------------------------------------------------------------------------------------------------------
 
     !-------------------------------------------------------------------------------------------------------------------------------
-    sbuf = repeat(' ',si)//trim(str(.true.,sblock%a))//' L:'//trim(str(.true.,sblock%l))//&
-           ' Ni:'//trim(str(.true.,sblock%Ni))//                                          &
-           ' Nj:'//trim(str(.true.,sblock%Nj))//                                          &
-           ' Nk:'//trim(str(.true.,sblock%Nk))//                                          &
-           ' Ns:'//trim(str(.true.,sblock%Ns))//                                          &
-           ' dir:'//trim(str(.true.,sblock%dir))
-    sbuf = trim(sbuf)//' PFi:'
+    sbuf = repeat(' ',si)//trim(str(.true.,sblock%a))//',L:'//trim(str(.true.,sblock%l))//&
+           ',Ni:'//trim(str(.true.,sblock%Ni))//                                          &
+           ',Nj:'//trim(str(.true.,sblock%Nj))//                                          &
+           ',Nk:'//trim(str(.true.,sblock%Nk))//                                          &
+           ',Ns:'//trim(str(.true.,sblock%Ns))//                                          &
+           ',dir:'//trim(str(.true.,sblock%dir))
+    sbuf = trim(sbuf)//',PFi:'
     do ss=1,size(sblock%pfi,dim=1)-1
       sbuf = trim(sbuf)//trim(str(.true.,sblock%pfi(ss)))//'-'
     enddo
     sbuf = trim(sbuf)//trim(str(.true.,sblock%pfi(size(sblock%pfi,dim=1))))
-    sbuf = trim(sbuf)//' PFj:'
+    sbuf = trim(sbuf)//',PFj:'
     do ss=1,size(sblock%pfj,dim=1)-1
       sbuf = trim(sbuf)//trim(str(.true.,sblock%pfj(ss)))//'-'
     enddo
     sbuf = trim(sbuf)//trim(str(.true.,sblock%pfj(size(sblock%pfj,dim=1))))
-    sbuf = trim(sbuf)//' PFk:'
+    sbuf = trim(sbuf)//',PFk:'
     do ss=1,size(sblock%pfk,dim=1)-1
       sbuf = trim(sbuf)//trim(str(.true.,sblock%pfk(ss)))//'-'
     enddo

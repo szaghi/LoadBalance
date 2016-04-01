@@ -80,6 +80,8 @@ if [ "$Cut" == "yes" ] ; then
     cc=`cat bsplit$lz.par | grep SPLIT | tail -n 1 | awk '{print $1}' | sed "s/'//g"`
     if [ "$cc" == "" ] ; then
       cc='ccSPLIT'
+    else
+      cc=$cc'SPLIT'
     fi
   else
     cc='cc'
