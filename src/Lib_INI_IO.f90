@@ -1392,7 +1392,7 @@ contains
     do s=1,size(self%sections)
       pres = (self%sections(s)%index(option=option)>0)
       if (pres) then
-        if (present(section)) section = self%sections(s)
+        if (present(section)) section = self%sections(s)%sname
         exit
       endif
     enddo

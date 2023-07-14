@@ -233,7 +233,7 @@ $(DOBJ)ir_precision.o : IR_Precision.F90
 	@echo $(COTEXT) | tee -a make.log
 	@$(FC) $(OPTSC) $< -o $@ 1>> diagnostic_messages 2>> error_messages
 
-$(DOBJ)lib_io_misc.o : Lib_IO_Misc.F90 \
+$(DOBJ)lib_io_misc.o : Lib_IO_Misc.f90 \
 	$(DOBJ)ir_precision.o \
 	$(DOBJ)data_type_os.o
 	@echo $(COTEXT) | tee -a make.log
